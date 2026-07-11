@@ -115,7 +115,7 @@
     <div class="mx-auto flex max-w-3xl items-center gap-3 px-5 py-4">
       <div class="flex-1">
         <div class="font-mono text-[11px] tracking-[0.18em] text-gold-2 uppercase">
-          Gocheok Church · Sermon Notes
+          Gocheok · Sermon Notes
         </div>
         <h1 class="mt-0.5 text-lg font-bold tracking-tight text-white">
           고척교회 말씀 아카이브
@@ -252,14 +252,16 @@
           “{selected.keyVerse.text}”
         </p>
         <div class="mt-1.5 text-sm text-white/70">— {selected.keyVerse.ref}</div>
-        <a
-          href="https://gocheok.onlybible.kr"
-          target="_blank"
-          rel="noreferrer"
-          class="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-gold-2 px-3.5 py-2 text-sm font-semibold text-navy transition hover:brightness-105"
-        >
-          📖 이 본문 암송하기 →
-        </a>
+        {#if selected.memVerseNo}
+          <a
+            href={`https://gocheok.onlybible.kr/?v=${selected.memVerseNo}`}
+            target="_blank"
+            rel="noreferrer"
+            class="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-gold-2 px-3.5 py-2 text-sm font-semibold text-navy transition hover:brightness-105"
+          >
+            📖 {selected.memRef} 암송하기 →
+          </a>
+        {/if}
       </section>
 
       <!-- 적용 질문 -->

@@ -19,4 +19,6 @@ export interface SermonNote {
   audioScript?: string // 3분 요약 오디오용 나레이션 대본(귀로 듣기 좋게 서술형)
   audio?: string // 미리 생성한 MP3 경로(여성 음성) — 있으면 네이티브 플레이어 사용
   audioAlt?: string // 비교용 남성 음성 MP3 경로(테스트용)
+  memVerseNo?: number // 성경암송 앱의 대응 구절 번호(영상ID 매칭) — 딥링크용
+  memRef?: string // 대응 암송구절 refShort (예: "눅 5:10")
 }
