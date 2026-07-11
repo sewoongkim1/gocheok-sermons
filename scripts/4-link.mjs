@@ -20,8 +20,8 @@ const sermons = JSON.parse(readFileSync(OUT, "utf8"));
 let hit = 0;
 for (const s of sermons) {
   const v = byVid.get(s.id);
-  if (v) { s.memVerseNo = v.no; s.memRef = v.refShort; hit++; }
-  else { delete s.memVerseNo; delete s.memRef; }
+  if (v) { s.memVerseNo = v.no; s.memRef = v.refShort; s.memText = v.text; hit++; }
+  else { delete s.memVerseNo; delete s.memRef; delete s.memText; }
 }
 writeFileSync(OUT, JSON.stringify(sermons, null, 2), "utf8");
 console.log(`매칭 완료: ${hit}/${sermons.length}편에 암송구절 연결 (memVerseNo)`);

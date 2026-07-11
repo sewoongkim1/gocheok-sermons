@@ -43,11 +43,8 @@ for (const e of all.slice(0, LIMIT)) {
     date = date.length === 8 ? `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}` : "";
   } catch {}
 
-  // 연도 필터(최신순이므로 해당 연도를 지나 이전 연도가 나오면 중단)
-  if (YEAR && date && !date.startsWith(YEAR)) {
-    if (meta.length) { console.log(`  ${YEAR}년 이전 도달 — 중단`); break; }
-    continue;
-  }
+  // 연도 필터: 재생목록이 날짜순이 아닐 수 있으므로 중단하지 않고 건너뛰기만
+  if (YEAR && date && !date.startsWith(YEAR)) continue;
   meta.push({ id: e.id, title: cleanTitle(e.title), date });
 
   if (existsSync(txtPath)) { console.log(`  캐시됨: ${e.id}`); done++; continue; }

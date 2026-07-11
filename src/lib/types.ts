@@ -21,4 +21,5 @@ export interface SermonNote {
   audioAlt?: string // 비교용 남성 음성 MP3 경로(테스트용)
   memVerseNo?: number // 성경암송 앱의 대응 구절 번호(영상ID 매칭) — 딥링크용
   memRef?: string // 대응 암송구절 refShort (예: "눅 5:10")
+  memText?: string // 대응 암송구절 본문 (핵심구절과 다르면 이걸 우선 표시)
 }

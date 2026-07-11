@@ -11,14 +11,44 @@
   const selected = $derived(sermons.find((s) => s.id === selectedId) ?? null)
   const base = import.meta.env.BASE_URL
   let voice = $state<'f' | 'm'>('f') // 3분 요약 음성: 여성/남성(테스트 비교용)
+
+  // ── 즐겨찾기(개인화 · localStorage) ──
+  const FAV_KEY = 'sermon_favs'
+  let favs = $state<string[]>(loadFavs())
+  let favOnly = $state(false)
+  function loadFavs(): string[] {
+    try {
+      return JSON.parse(localStorage.getItem(FAV_KEY) || '[]')
+    } catch {
+      return []
+    }
+  }
+  const isFav = (id: string) => favs.includes(id)
+  function toggleFav(id: string) {
+    favs = favs.includes(id) ? favs.filter((x) => x !== id) : [...favs, id]
+    try {
+      localStorage.setItem(FAV_KEY, JSON.stringify(favs))
+    } catch {}
+  }
   const audioSrc = $derived(
     selected?.audio
       ? base + (voice === 'm' && selected.audioAlt ? selected.audioAlt : selected.audio)
       : '',
   )
+  // 암송구절이 매칭되면 그것을 우선 표시(핵심구절과 다를 때 암송구절 사용)
+  const kv = $derived(
+    selected
+      ? {
+          ref: selected.memRef || selected.keyVerse.ref,
+          text: selected.memText || selected.keyVerse.text,
+          isMem: !!selected.memVerseNo,
+        }
+      : null,
+  )
 
   const filtered = $derived(
     sermons.filter((s) => {
+      if (favOnly && !favs.includes(s.id)) return false
       const q = query.trim().toLowerCase()
       if (!q) return true
       return (
@@ -160,9 +190,20 @@
         <div class="font-mono text-xs tracking-wide text-gold">
           {selected.series}{selected.date ? ` · ${fmtDate(selected.date)}` : ''}
         </div>
-        <h2 class="mt-1 text-2xl font-bold tracking-tight text-ink text-balance">
-          {selected.title}
-        </h2>
+        <div class="mt-1 flex items-start justify-between gap-3">
+          <h2 class="text-2xl font-bold tracking-tight text-ink text-balance">
+            {selected.title}
+          </h2>
+          <button
+            onclick={() => toggleFav(selected!.id)}
+            aria-label="즐겨찾기"
+            class="shrink-0 rounded-lg p-1 text-2xl leading-none transition {isFav(selected.id)
+              ? 'text-gold'
+              : 'text-ink-mute hover:text-ink-soft'}"
+          >
+            {isFav(selected.id) ? '★' : '☆'}
+          </button>
+        </div>
         <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-soft">
           <span>{selected.preacher}</span>
           <span class="text-line">|</span>
@@ -245,13 +286,15 @@
         </ol>
       </section>
 
-      <!-- 핵심 구절 -->
+      <!-- 핵심 구절(암송구절이 있으면 그것을 표시) -->
       <section class="mt-6 rounded-xl bg-navy px-5 py-5 text-white">
-        <div class="font-mono text-[11px] tracking-[0.14em] text-gold-2 uppercase">핵심 구절</div>
+        <div class="font-mono text-[11px] tracking-[0.14em] text-gold-2 uppercase">
+          {kv?.isMem ? '암송 구절' : '핵심 구절'}
+        </div>
         <p class="mt-2 font-serif text-lg leading-relaxed text-white">
-          “{selected.keyVerse.text}”
+          “{kv?.text}”
         </p>
-        <div class="mt-1.5 text-sm text-white/70">— {selected.keyVerse.ref}</div>
+        <div class="mt-1.5 text-sm text-white/70">— {kv?.ref}</div>
         {#if selected.memVerseNo}
           <a
             href={`https://gocheok.onlybible.kr/?v=${selected.memVerseNo}`}
@@ -292,16 +335,24 @@
         class="w-full rounded-xl border border-line bg-surface px-4 py-3 text-ink outline-none placeholder:text-ink-mute focus:border-navy-2"
       />
 
-      <div class="mt-3 font-mono text-xs text-ink-mute">
-        {filtered.length}편의 설교 노트
+      <div class="mt-3 flex items-center justify-between gap-3">
+        <div class="font-mono text-xs text-ink-mute">{filtered.length}편의 설교 노트</div>
+        <button
+          onclick={() => (favOnly = !favOnly)}
+          class="rounded-full border px-3 py-1 text-xs font-semibold transition {favOnly
+            ? 'border-gold bg-gold text-white'
+            : 'border-line bg-surface text-ink-soft hover:text-ink'}"
+        >
+          {favOnly ? '★' : '☆'} 즐겨찾기 {favs.length ? `(${favs.length})` : ''}
+        </button>
       </div>
 
       <ul class="mt-4 flex flex-col gap-3">
         {#each filtered as s (s.id)}
-          <li>
+          <li class="relative">
             <button
               onclick={() => open(s.id)}
-              class="w-full rounded-xl border border-line bg-surface p-4 text-left transition hover:border-gold hover:shadow-sm"
+              class="w-full rounded-xl border border-line bg-surface p-4 pr-11 text-left transition hover:border-gold hover:shadow-sm"
             >
               <div class="font-mono text-[11px] tracking-wide text-gold">
                 {s.series}{s.date ? ` · ${fmtDate(s.date)}` : ''}
@@ -311,6 +362,17 @@
                 {s.preacher} · 📖 {s.scripture}
               </div>
               <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-mute">{s.summary}</p>
+            </button>
+            <button
+              onclick={() => toggleFav(s.id)}
+              aria-label="즐겨찾기"
+              class="absolute right-2 top-2 rounded-lg p-1.5 text-lg leading-none transition hover:bg-raise {isFav(
+                s.id,
+              )
+                ? 'text-gold'
+                : 'text-ink-mute'}"
+            >
+              {isFav(s.id) ? '★' : '☆'}
             </button>
           </li>
         {/each}
