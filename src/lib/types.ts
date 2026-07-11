@@ -6,10 +6,11 @@ export interface SermonPoint {
 
 export interface SermonNote {
   id: string // YouTube video id
-  title: string // 설교 제목
+  title: string // 설교 제목(날짜 분리된 순수 제목)
   preacher: string // 설교자
-  series: string // 카테고리/시리즈 (예: "차동혁목사 주일설교")
-  date: string // YYYY-MM-DD (없으면 "")
+  series?: string // (구) 시리즈 — 번들 폴백 호환용
+  category?: string // 구분: 주일설교/금요성령집회/새벽기도회/송구영신예배 (테이블)
+  date: string // YYYY-MM-DD 예배일 (없으면 "")
   scripture: string // 본문 (예: "누가복음 5:1-11")
   summary: string // 한 줄 요약
   points: SermonPoint[] // 핵심 포인트

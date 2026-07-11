@@ -1,8 +1,36 @@
 <script lang="ts">
   import type { SermonNote } from './lib/types'
-  import data from './data/sermons.json'
+  import bundled from './data/sermons.json'
+  import { getSermons } from './lib/api'
 
-  const sermons = data as SermonNote[]
+  // 테이블 우선(캐시→즉시 표시, 백그라운드 갱신), 실패 시 번들 폴백
+  const CACHE_KEY = 'sermon_cache_v1'
+  function loadInitial(): SermonNote[] {
+    try {
+      const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null')
+      if (Array.isArray(c) && c.length) return c
+    } catch {}
+    return bundled as SermonNote[]
+  }
+  let sermons = $state<SermonNote[]>(loadInitial())
+
+  // 앱 마운트되면 스플래시 내림(데이터는 캐시/번들로 즉시 준비됨)
+  $effect(() => {
+    setTimeout(() => (window as any).hideSplash?.(), 300)
+  })
+
+  $effect(() => {
+    getSermons()
+      .then((rows) => {
+        if (rows.length) {
+          sermons = rows
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(rows))
+          } catch {}
+        }
+      })
+      .catch(() => {}) // 실패 시 캐시/번들 유지
+  })
 
   let query = $state('')
   let selectedId = $state<string | null>(null)
@@ -188,7 +216,7 @@
       <!-- 제목 블록 -->
       <div class="mt-6">
         <div class="font-mono text-xs tracking-wide text-gold">
-          {selected.series}{selected.date ? ` · ${fmtDate(selected.date)}` : ''}
+          {selected.category || selected.series}{selected.date ? ` · ${fmtDate(selected.date)}` : ''}
         </div>
         <div class="mt-1 flex items-start justify-between gap-3">
           <h2 class="text-2xl font-bold tracking-tight text-ink text-balance">
@@ -355,7 +383,7 @@
               class="w-full rounded-xl border border-line bg-surface p-4 pr-11 text-left transition hover:border-gold hover:shadow-sm"
             >
               <div class="font-mono text-[11px] tracking-wide text-gold">
-                {s.series}{s.date ? ` · ${fmtDate(s.date)}` : ''}
+                {s.category || s.series}{s.date ? ` · ${fmtDate(s.date)}` : ''}
               </div>
               <h2 class="mt-1 font-bold tracking-tight text-ink text-balance">{s.title}</h2>
               <div class="mt-1 text-sm text-ink-soft">

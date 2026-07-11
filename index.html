@@ -9,8 +9,89 @@
       content="고척교회 설교를 AI가 핵심 3점·본문·적용 질문으로 정리한 말씀 아카이브"
     />
     <title>고척교회 말씀 아카이브</title>
+    <style>
+      /* 스플래시 (앱 로드 전 즉시 표시) */
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(160deg, #1a3a6b, #0f2545);
+        transition: opacity 0.4s;
+      }
+      #splash.hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .splash-inner {
+        text-align: center;
+        color: #fff;
+      }
+      #splash-logo {
+        box-sizing: content-box;
+        width: 84px;
+        height: auto;
+        padding: 16px;
+        margin: 0 auto 20px;
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+        animation: splash-pulse 2.4s ease-in-out infinite;
+      }
+      @keyframes splash-pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.07);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #splash-logo {
+          animation: none;
+        }
+      }
+      .splash-title {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+      }
+      .splash-sub {
+        margin-top: 8px;
+        font-size: 13px;
+        opacity: 0.85;
+      }
+      .splash-ver {
+        margin-top: 22px;
+        font-size: 11px;
+        opacity: 0.5;
+        font-family: ui-monospace, Consolas, monospace;
+      }
+    </style>
   </head>
   <body>
+    <div id="splash">
+      <div class="splash-inner">
+        <img id="splash-logo" src="https://summer.onlybible.kr/logo3.png" alt="고척교회" />
+        <div class="splash-title">고척교회 말씀 아카이브</div>
+        <div class="splash-sub">오직 성경, 말씀이 답이다!</div>
+        <div class="splash-ver">v1.00</div>
+      </div>
+    </div>
+    <script>
+      window.hideSplash = function () {
+        var s = document.getElementById('splash')
+        if (!s) return
+        s.classList.add('hide')
+        setTimeout(function () {
+          if (s && s.parentNode) s.parentNode.removeChild(s)
+        }, 400)
+      }
+      setTimeout(window.hideSplash, 6000) // 안전장치
+    </script>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
