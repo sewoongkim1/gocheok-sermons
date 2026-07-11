@@ -1,0 +1,73 @@
+@import 'tailwindcss';
+
+/* ── 고척교회 말씀 아카이브 · 브랜드 토큰 (네이비 + 골드) ── */
+@theme {
+  --color-paper: #f4f2ec;
+  --color-surface: #fffdf8;
+  --color-raise: #faf8f2;
+  --color-ink: #17223a;
+  --color-ink-soft: #48526a;
+  --color-ink-mute: #7c8598;
+  --color-line: #e2ded2;
+  --color-navy: #1a3a6b;
+  --color-navy-2: #2b5288;
+  --color-gold: #9c740f;
+  --color-gold-2: #c9a227;
+
+  --font-sans: 'Pretendard', ui-sans-serif, system-ui, 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  --font-serif: 'Gowun Batang', 'Nanum Myeongjo', ui-serif, Georgia, serif;
+  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+/* 다크 모드 토큰 — prefers-color-scheme + 수동 토글(data-theme) 양방향 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #0d1424;
+    --color-surface: #141d30;
+    --color-raise: #101828;
+    --color-ink: #e9ecf4;
+    --color-ink-soft: #aeb7ca;
+    --color-ink-mute: #7b8398;
+    --color-line: #25314a;
+    --color-navy: #7ea0dd;
+    --color-navy-2: #5c7fbd;
+    --color-gold: #d9b44d;
+    --color-gold-2: #ecca6c;
+  }
+}
+:root[data-theme='dark'] {
+  --color-paper: #0d1424;
+  --color-surface: #141d30;
+  --color-raise: #101828;
+  --color-ink: #e9ecf4;
+  --color-ink-soft: #aeb7ca;
+  --color-ink-mute: #7b8398;
+  --color-line: #25314a;
+  --color-navy: #7ea0dd;
+  --color-navy-2: #5c7fbd;
+  --color-gold: #d9b44d;
+  --color-gold-2: #ecca6c;
+}
+:root[data-theme='light'] {
+  --color-paper: #f4f2ec;
+  --color-surface: #fffdf8;
+  --color-raise: #faf8f2;
+  --color-ink: #17223a;
+  --color-ink-soft: #48526a;
+  --color-ink-mute: #7c8598;
+  --color-line: #e2ded2;
+  --color-navy: #1a3a6b;
+  --color-navy-2: #2b5288;
+  --color-gold: #9c740f;
+  --color-gold-2: #c9a227;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
