@@ -14,9 +14,9 @@
   }
   let sermons = $state<SermonNote[]>(loadInitial())
 
-  // 앱 마운트되면 스플래시 내림(데이터는 캐시/번들로 즉시 준비됨)
+  // 앱 마운트되면 스플래시 내림(최소 1초 노출)
   $effect(() => {
-    setTimeout(() => (window as any).hideSplash?.(), 300)
+    setTimeout(() => (window as any).hideSplash?.(), 1000)
   })
 
   $effect(() => {
