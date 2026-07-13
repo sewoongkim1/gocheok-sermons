@@ -27,8 +27,9 @@
    GitHub → Actions → **"설교 추가"** → Run workflow → 유튜브 링크 입력 → 실행.
    러너가 자막(yt-dlp)→노트(Claude)→음성(Azure)→암송매칭→테이블 적재→오디오 커밋→Pages 배포까지 전부.
    - 워크플로우: `.github/workflows/add-sermon.yml`
-   - **필요 시크릿**(저장소 Settings→Secrets→Actions): `ANTHROPIC_API_KEY`, `AZURE_SPEECH_KEY`, `SERMON_ADMIN`, `AZURE_SPEECH_REGION`(=koreacentral)
-   - ⚠️ 서버(Edge Function)에서 유튜브 자막 직접 수집은 PoToken 때문에 불가 → yt-dlp가 되는 Actions 러너에서 처리
+   - **필요 시크릿**(저장소 Settings→Secrets→Actions): `ANTHROPIC_API_KEY`, `AZURE_SPEECH_KEY`, `SERMON_ADMIN`, `AZURE_SPEECH_REGION`(=koreacentral), **`YT_COOKIES`**(유튜브 cookies.txt 내용 — Actions는 데이터센터 IP라 봇차단, 쿠키로 우회)
+   - ⚠️ 서버(Edge Function)에서 자막 직접 수집은 PoToken 때문에 불가. Actions도 IP 봇차단 → **쿠키 필요**. yt-dlp에 `--cookies`+`--ignore-no-formats-error`로 해결
+   - 🍪 **쿠키 만료 시**(자막 실패 재발) "Get cookies.txt LOCALLY" 확장앱으로 재추출 → YT_COOKIES 시크릿 갱신
 2. 로컬 직접: `ANTHROPIC_API_KEY=.. AZURE_SPEECH_KEY=.. AZURE_SPEECH_REGION=koreacentral SERMON_ADMIN=.. node scripts/add-sermon.mjs <url>` 후 오디오 커밋·푸시
 3. Claude에게 링크 주기: 전체 처리해줌
 4. 관리 화면(gocheok admin → 📜 말씀 아카이브 관리): **편집·숨김·삭제 전용**(AI 생성 아님)
