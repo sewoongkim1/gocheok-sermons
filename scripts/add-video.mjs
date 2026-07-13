@@ -29,11 +29,14 @@ for (const id of ids) {
   const txtPath = `${TDIR}/${id}.txt`;
   if (!existsSync(txtPath)) {
     try {
-      execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, "--skip-download", "--write-auto-sub",
-        "--sub-lang", "ko-orig", "--sub-format", "json3",
+      execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, "--skip-download", "--ignore-no-formats-error",
+        "--write-auto-sub", "--sub-langs", "ko-orig,ko", "--sub-format", "json3",
         "-o", `${TDIR}/sub_%(id)s.%(ext)s`, `https://www.youtube.com/watch?v=${id}`],
         { env: ENV });
-      const j = JSON.parse(readFileSync(`${TDIR}/sub_${id}.ko-orig.json3`, "utf8"));
+      // ko-orig 없으면 ko 파일로 폴백
+      const subPath = existsSync(`${TDIR}/sub_${id}.ko-orig.json3`)
+        ? `${TDIR}/sub_${id}.ko-orig.json3` : `${TDIR}/sub_${id}.ko.json3`;
+      const j = JSON.parse(readFileSync(subPath, "utf8"));
       const text = (j.events || []).filter((ev) => ev.segs)
         .map((ev) => ev.segs.map((s) => s.utf8 || "").join("")).join(" ").replace(/\s+/g, " ").trim();
       writeFileSync(txtPath, text, "utf8");
