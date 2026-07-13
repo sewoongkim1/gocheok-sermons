@@ -31,10 +31,13 @@ function sino(n) {
 // 한자어로 읽는 단위 앞의 숫자를 한글로(장·절·편·년·월·일·분·초·주·차·호·번지)
 const numFix = (text) =>
   text.replace(/(\d+)\s*(장|절|편|년|월|일|분|초|주|차|호|번지)/g, (_, num, unit) => sino(num) + unit);
+// 대본 시작의 "고척교회 말씀 아카이브," 인트로 제거
+const dropIntro = (text) =>
+  text.replace(/^\s*고척교회\s*말씀\s*아카이브\s*[,，.]?\s*/, "");
 
 const ssml = (text) =>
   `<speak version="1.0" xml:lang="ko-KR"><voice name="${VOICE}">` +
-  `<prosody rate="+5%">${esc(numFix(text))}</prosody></voice></speak>`;
+  `<prosody rate="+5%">${esc(numFix(dropIntro(text)))}</prosody></voice></speak>`;
 
 async function synth(text, outPath) {
   const res = await fetch(`https://${REGION}.tts.speech.microsoft.com/cognitiveservices/v1`, {

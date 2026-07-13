@@ -58,7 +58,7 @@
       localStorage.setItem(FAV_KEY, JSON.stringify(favs))
     } catch {}
   }
-  const AUDIO_VER = 'v2' // 음성 재생성 시 올림(브라우저 캐시 갱신)
+  const AUDIO_VER = 'v3' // 음성 재생성 시 올림(브라우저 캐시 갱신)
   const audioSrc = $derived(
     selected?.audio
       ? base + (voice === 'm' && selected.audioAlt ? selected.audioAlt : selected.audio) + '?' + AUDIO_VER
