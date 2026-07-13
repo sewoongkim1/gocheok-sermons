@@ -1,0 +1,70 @@
+name: 설교 추가 (유튜브 링크)
+
+# 관리자: GitHub → Actions → "설교 추가" → Run workflow → 링크 붙여넣기 → 실행
+# 러너가 자막→AI노트→Azure음성→암송매칭→테이블 적재→오디오 커밋→Pages 배포까지 전부 수행.
+# 로컬·키 불필요 (키는 이 저장소의 Settings → Secrets 에 저장).
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: '유튜브 설교 링크 또는 영상 ID (예: https://youtu.be/xxxx 또는 xxxx)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: yt-dlp 설치
+        run: pip install -U yt-dlp
+      - run: npm ci
+
+      - name: 설교 파이프라인 (자막→노트→음성→매칭→테이블)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
+          SERMON_ADMIN: ${{ secrets.SERMON_ADMIN }}
+        run: node scripts/add-sermon.mjs "${{ inputs.url }}"
+
+      - name: 오디오·데이터 커밋
+        run: |
+          git config user.name "김세웅"
+          git config user.email "sewkim00@gmail.com"
+          git add public/audio src/data/sermons.json data/meta.json data/sermons_rows.json
+          if git diff --cached --quiet; then
+            echo "변경 없음(이미 있는 설교)"
+          else
+            git commit -m "설교 추가(Actions): ${{ inputs.url }}"
+            git push
+          fi
+
+      - name: 빌드
+        run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
