@@ -72,6 +72,30 @@ Deno.serve(async (req) => {
         if (error) throw error;
         return json({ ok: true });
       }
+      case "addByUrl": {
+        // 관리화면에서 유튜브 링크로 설교 추가 → GitHub Action(add-sermon.yml) 트리거
+        if (adminErr(b)) return json({ ok: false, error: "인증 실패" }, 403);
+        const token = Deno.env.get("GH_DISPATCH_TOKEN");
+        if (!token) return json({ ok: false, error: "GH_DISPATCH_TOKEN 시크릿 미설정" }, 500);
+        const url = String(b.url || "").trim();
+        if (!url) return json({ ok: false, error: "링크가 비었어요" }, 400);
+        const gh = await fetch(
+          "https://api.github.com/repos/sewoongkim1/gocheok-sermons/actions/workflows/add-sermon.yml/dispatches",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "User-Agent": "gocheok-sermon-admin",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ref: "main", inputs: { url } }),
+          },
+        );
+        if (gh.status === 204) return json({ ok: true });
+        return json({ ok: false, error: `GitHub ${gh.status}: ${(await gh.text()).slice(0, 200)}` }, 500);
+      }
       case "importSermons": {
         if (adminErr(b)) return json({ ok: false, error: "인증 실패" }, 403);
         const rows = (b.sermons || []).map(toRow);
