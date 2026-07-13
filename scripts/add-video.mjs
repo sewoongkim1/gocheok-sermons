@@ -6,6 +6,8 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 
 const ENV = { ...process.env, PYTHONUTF8: "1", PYTHONIOENCODING: "utf-8" };
 const TDIR = "data/transcripts";
+// 클라우드(Actions)에서 유튜브 봇차단 우회용 쿠키 파일(있으면 사용)
+const COOKIES = existsSync("data/yt-cookies.txt") ? ["--cookies", "data/yt-cookies.txt"] : [];
 const ids = process.argv.slice(2);
 if (!ids.length) { console.error("영상 ID를 인자로 주세요."); process.exit(1); }
 
@@ -16,7 +18,7 @@ const byId = new Map(meta.map((m) => [m.id, m]));
 for (const id of ids) {
   let title = id, date = "";
   try {
-    const out = execFileSync("yt-dlp", ["--no-warnings", "--print", "%(title)s\t%(upload_date)s",
+    const out = execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, "--print", "%(title)s\t%(upload_date)s",
       `https://www.youtube.com/watch?v=${id}`], { encoding: "utf8", env: ENV }).trim().split("\t");
     title = cleanTitle(out[0] || id);
     const d = (out[1] || "").trim();
@@ -27,10 +29,10 @@ for (const id of ids) {
   const txtPath = `${TDIR}/${id}.txt`;
   if (!existsSync(txtPath)) {
     try {
-      execFileSync("yt-dlp", ["--no-warnings", "--skip-download", "--write-auto-sub",
+      execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, "--skip-download", "--write-auto-sub",
         "--sub-lang", "ko-orig", "--sub-format", "json3",
         "-o", `${TDIR}/sub_%(id)s.%(ext)s`, `https://www.youtube.com/watch?v=${id}`],
-        { stdio: "ignore" });
+        { env: ENV, stdio: "ignore" });
       const j = JSON.parse(readFileSync(`${TDIR}/sub_${id}.ko-orig.json3`, "utf8"));
       const text = (j.events || []).filter((ev) => ev.segs)
         .map((ev) => ev.segs.map((s) => s.utf8 || "").join("")).join(" ").replace(/\s+/g, " ").trim();

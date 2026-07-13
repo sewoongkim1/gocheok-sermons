@@ -26,3 +26,6 @@ dist-ssr
 # 파이프라인 중간 산출물
 data/transcripts/
 data/verses_live.json
+
+# 유튜브 쿠키(비밀 — 절대 커밋 금지)
+data/yt-cookies.txt

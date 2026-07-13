@@ -40,6 +40,18 @@ jobs:
         run: pip install -U yt-dlp
       - run: npm ci
 
+      - name: 유튜브 쿠키 준비 (봇차단 우회)
+        env:
+          YT_COOKIES: ${{ secrets.YT_COOKIES }}
+        run: |
+          mkdir -p data
+          if [ -n "$YT_COOKIES" ]; then
+            printf '%s\n' "$YT_COOKIES" > data/yt-cookies.txt
+            echo "쿠키 파일 준비됨 ($(wc -l < data/yt-cookies.txt)줄)"
+          else
+            echo "⚠️ YT_COOKIES 시크릿 없음 — 쿠키 없이 진행(자막 실패 가능)"
+          fi
+
       - name: 설교 파이프라인 (자막→노트→음성→매칭→테이블)
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
