@@ -23,10 +23,16 @@
 - `og-gen.mjs` / `icon-gen.mjs` — OG 썸네일·PWA 아이콘 생성(연한 파랑 배경, sharp)
 
 ## 새 설교 추가 방법
-1. **가장 쉬움**: 유튜브 링크를 Claude에게 주면 전체 처리(자막→노트→음성→매칭→테이블→오디오 커밋·배포)
-2. 직접: `ANTHROPIC_API_KEY=.. AZURE_SPEECH_KEY=.. AZURE_SPEECH_REGION=koreacentral SERMON_ADMIN=.. node scripts/add-sermon.mjs <url>` 후 `git add public/audio src/data/sermons.json && git commit && git push`
-3. 관리 화면: **편집·숨김·삭제 전용**(AI 생성은 파이프라인). gocheok.onlybible.kr/admin.html → 📜 말씀 아카이브 관리
-- 노트 데이터는 테이블로 즉시 반영(재배포 X). **오디오 MP3만 커밋·푸시(재배포) 필요**
+1. **GitHub Actions(추천, 로컬·키 불필요 — 관리자 교체 대비):**
+   GitHub → Actions → **"설교 추가"** → Run workflow → 유튜브 링크 입력 → 실행.
+   러너가 자막(yt-dlp)→노트(Claude)→음성(Azure)→암송매칭→테이블 적재→오디오 커밋→Pages 배포까지 전부.
+   - 워크플로우: `.github/workflows/add-sermon.yml`
+   - **필요 시크릿**(저장소 Settings→Secrets→Actions): `ANTHROPIC_API_KEY`, `AZURE_SPEECH_KEY`, `SERMON_ADMIN`, `AZURE_SPEECH_REGION`(=koreacentral)
+   - ⚠️ 서버(Edge Function)에서 유튜브 자막 직접 수집은 PoToken 때문에 불가 → yt-dlp가 되는 Actions 러너에서 처리
+2. 로컬 직접: `ANTHROPIC_API_KEY=.. AZURE_SPEECH_KEY=.. AZURE_SPEECH_REGION=koreacentral SERMON_ADMIN=.. node scripts/add-sermon.mjs <url>` 후 오디오 커밋·푸시
+3. Claude에게 링크 주기: 전체 처리해줌
+4. 관리 화면(gocheok admin → 📜 말씀 아카이브 관리): **편집·숨김·삭제 전용**(AI 생성 아님)
+- 노트 데이터는 테이블로 즉시 반영. **오디오 MP3만 커밋·배포 필요**(향후 Supabase Storage로 옮기면 이것도 불필요)
 
 ## 앱 기능
 - 목록(검색: 제목·설교자·본문·주제) · 상세(유튜브 플레이어 + AI 노트)
