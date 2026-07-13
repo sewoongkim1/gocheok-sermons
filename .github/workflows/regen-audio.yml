@@ -1,0 +1,52 @@
+name: 음성 재생성 (전체)
+
+# 3분 요약 음성을 전체 재생성(대본·발음 규칙 바뀌었을 때). Azure 키는 Secrets 사용.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: add-sermon
+  cancel-in-progress: false
+
+jobs:
+  regen:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: 전체 음성 재생성 (숫자 한자어 발음 반영)
+        env:
+          FORCE: '1'
+          AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
+        run: node scripts/3-tts.mjs
+
+      - name: 오디오 커밋
+        run: |
+          git config user.name "김세웅"
+          git config user.email "sewkim00@gmail.com"
+          git add public/audio src/data/sermons.json
+          if git diff --cached --quiet; then echo "변경 없음"; else
+            git commit -m "음성 재생성(숫자 한자어 발음)"; git push; fi
+
+      - name: 빌드
+        run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

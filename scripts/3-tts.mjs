@@ -14,9 +14,27 @@ if (!KEY) { console.error("AZURE_SPEECH_KEY 환경변수가 필요합니다."); 
 mkdirSync(ADIR, { recursive: true });
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+// 성경 장·절 등은 한자어로 읽어야 함(5장→오장). 숫자→한자어 한글 변환
+const SD = ["", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구"];
+function sino(n) {
+  n = +n;
+  if (n === 0) return "영";
+  let out = "";
+  const th = Math.floor(n / 1000) % 10, h = Math.floor(n / 100) % 10, t = Math.floor(n / 10) % 10, o = n % 10;
+  if (th) out += (th === 1 ? "" : SD[th]) + "천";
+  if (h) out += (h === 1 ? "" : SD[h]) + "백";
+  if (t) out += (t === 1 ? "" : SD[t]) + "십";
+  if (o) out += SD[o];
+  return out;
+}
+// 한자어로 읽는 단위 앞의 숫자를 한글로(장·절·편·년·월·일·분·초·주·차·호·번지)
+const numFix = (text) =>
+  text.replace(/(\d+)\s*(장|절|편|년|월|일|분|초|주|차|호|번지)/g, (_, num, unit) => sino(num) + unit);
+
 const ssml = (text) =>
   `<speak version="1.0" xml:lang="ko-KR"><voice name="${VOICE}">` +
-  `<prosody rate="+5%">${esc(text)}</prosody></voice></speak>`;
+  `<prosody rate="+5%">${esc(numFix(text))}</prosody></voice></speak>`;
 
 async function synth(text, outPath) {
   const res = await fetch(`https://${REGION}.tts.speech.microsoft.com/cognitiveservices/v1`, {
@@ -40,7 +58,7 @@ for (const s of sermons) {
   if (!s.audioScript) continue;
   const rel = `audio/${s.id}.mp3`;
   const abs = `${ADIR}/${s.id}.mp3`;
-  if (existsSync(abs) && s.audio === rel) { console.log(`  건너뜀(있음): ${s.id}`); continue; }
+  if (!process.env.FORCE && existsSync(abs) && s.audio === rel) { console.log(`  건너뜀(있음): ${s.id}`); continue; }
   try {
     await synth(s.audioScript, abs);
     s.audio = rel;

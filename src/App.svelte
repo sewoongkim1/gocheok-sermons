@@ -58,9 +58,10 @@
       localStorage.setItem(FAV_KEY, JSON.stringify(favs))
     } catch {}
   }
+  const AUDIO_VER = 'v2' // 음성 재생성 시 올림(브라우저 캐시 갱신)
   const audioSrc = $derived(
     selected?.audio
-      ? base + (voice === 'm' && selected.audioAlt ? selected.audioAlt : selected.audio)
+      ? base + (voice === 'm' && selected.audioAlt ? selected.audioAlt : selected.audio) + '?' + AUDIO_VER
       : '',
   )
   // 암송구절이 매칭되면 그것을 우선 표시(핵심구절과 다를 때 암송구절 사용)
