@@ -32,13 +32,16 @@ for (const id of ids) {
       execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, "--skip-download", "--write-auto-sub",
         "--sub-lang", "ko-orig", "--sub-format", "json3",
         "-o", `${TDIR}/sub_%(id)s.%(ext)s`, `https://www.youtube.com/watch?v=${id}`],
-        { env: ENV, stdio: "ignore" });
+        { env: ENV });
       const j = JSON.parse(readFileSync(`${TDIR}/sub_${id}.ko-orig.json3`, "utf8"));
       const text = (j.events || []).filter((ev) => ev.segs)
         .map((ev) => ev.segs.map((s) => s.utf8 || "").join("")).join(" ").replace(/\s+/g, " ").trim();
       writeFileSync(txtPath, text, "utf8");
       console.log(`  ✓ 자막 ${id} (${text.length}자)`);
-    } catch (e) { console.log(`  ✗ 자막 실패: ${id}`); }
+    } catch (e) {
+      const err = (e.stderr || e.message || "").toString().slice(0, 400);
+      console.log(`  ✗ 자막 실패: ${id} — ${err}`);
+    }
   }
   byId.set(id, { id, title, date });
   console.log(`  추가: ${id} | ${title} | ${date}`);
