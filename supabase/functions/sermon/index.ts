@@ -20,6 +20,7 @@ const json = (b: unknown, s = 200) =>
 const toApp = (r: any) => ({
   id: r.id, title: r.title, date: r.svc_date || "", category: r.category,
   preacher: r.preacher, scripture: r.scripture || "", summary: r.summary || "",
+  conclusion: r.conclusion || "",
   points: r.points || [], keyVerse: r.key_verse || null,
   questions: r.questions || [], tags: r.tags || [],
   audioScript: r.audio_script || "", audio: r.audio || undefined,
@@ -30,6 +31,7 @@ const toRow = (s: any) => ({
   id: s.id, title: s.title, svc_date: s.date || s.svc_date || null,
   category: s.category || "주일설교", preacher: s.preacher || "차동혁 위임목사",
   scripture: s.scripture || null, summary: s.summary || null,
+  conclusion: s.conclusion || null,
   points: s.points || [], key_verse: s.keyVerse || s.key_verse || null,
   questions: s.questions || [], tags: s.tags || [],
   audio_script: s.audioScript || s.audio_script || null, audio: s.audio || null,
