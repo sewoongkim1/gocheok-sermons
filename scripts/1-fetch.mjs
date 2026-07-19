@@ -6,6 +6,10 @@ import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 
 // Windows에서 yt-dlp stdout 한글이 cp949로 깨지는 것 방지
 const ENV = { ...process.env, PYTHONUTF8: "1", PYTHONIOENCODING: "utf-8" };
+// 봇차단 우회: 쿠키 파일(있으면) + 여러 player_client 순차 시도
+const COOKIES = existsSync("data/yt-cookies.txt") ? ["--cookies", "data/yt-cookies.txt"] : [];
+const CLIENTS = ["--extractor-args",
+  `youtube:player_client=${process.env.YT_CLIENTS || "default,tv,web_safari,mweb"}`];
 
 const PLAYLIST = "PLmW-GwY4IF3yRWzP8gEPtAUvKqNeVstCf"; // 차동혁목사 주일설교
 const LIMIT = Number(process.argv[2] || 999);
@@ -19,7 +23,7 @@ const cleanTitle = (t) => t.replace(/^\[고척교회\]\s*/, "").replace(/[ㅣ|].
 
 console.log("설교 목록 가져오는 중…");
 const raw = execFileSync("yt-dlp", [
-  "--flat-playlist", "--no-warnings",
+  "--flat-playlist", "--no-warnings", ...COOKIES, ...CLIENTS,
   "--print", "%(id)s\t%(title)s",
   `https://www.youtube.com/playlist?list=${PLAYLIST}`,
 ], { encoding: "utf8", maxBuffer: 1 << 24, env: ENV });
@@ -38,8 +42,8 @@ for (const e of all.slice(0, LIMIT)) {
   // 업로드 날짜
   let date = "";
   try {
-    date = execFileSync("yt-dlp", ["--no-warnings", "--print", "%(upload_date)s",
-      `https://www.youtube.com/watch?v=${e.id}`], { encoding: "utf8" }).trim();
+    date = execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, ...CLIENTS, "--print", "%(upload_date)s",
+      `https://www.youtube.com/watch?v=${e.id}`], { encoding: "utf8", env: ENV }).trim();
     date = date.length === 8 ? `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}` : "";
   } catch {}
 
@@ -51,10 +55,10 @@ for (const e of all.slice(0, LIMIT)) {
 
   // 자막(ko-orig) → json3 → 텍스트
   try {
-    execFileSync("yt-dlp", ["--no-warnings", "--skip-download",
+    execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, ...CLIENTS, "--skip-download",
       "--write-auto-sub", "--sub-lang", "ko-orig", "--sub-format", "json3",
       "-o", `${TDIR}/sub_%(id)s.%(ext)s`,
-      `https://www.youtube.com/watch?v=${e.id}`], { stdio: "ignore" });
+      `https://www.youtube.com/watch?v=${e.id}`], { stdio: "ignore", env: ENV });
     const j = JSON.parse(readFileSync(`${TDIR}/sub_${e.id}.ko-orig.json3`, "utf8"));
     const text = (j.events || [])
       .filter((ev) => ev.segs)

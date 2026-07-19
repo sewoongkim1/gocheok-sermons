@@ -8,6 +8,10 @@ const ENV = { ...process.env, PYTHONUTF8: "1", PYTHONIOENCODING: "utf-8" };
 const TDIR = "data/transcripts";
 // 클라우드(Actions)에서 유튜브 봇차단 우회용 쿠키 파일(있으면 사용)
 const COOKIES = existsSync("data/yt-cookies.txt") ? ["--cookies", "data/yt-cookies.txt"] : [];
+// 봇차단(데이터센터 IP) 우회: 여러 player_client를 순차 시도. 쿠키 만료 시에도 일부 클라이언트로 통과 가능.
+// YT_CLIENTS 환경변수로 조합 조정 가능(예: "default,tv,web_safari,mweb").
+const CLIENTS = ["--extractor-args",
+  `youtube:player_client=${process.env.YT_CLIENTS || "default,tv,web_safari,mweb"}`];
 const ids = process.argv.slice(2);
 if (!ids.length) { console.error("영상 ID를 인자로 주세요."); process.exit(1); }
 
@@ -18,18 +22,21 @@ const byId = new Map(meta.map((m) => [m.id, m]));
 for (const id of ids) {
   let title = id, date = "";
   try {
-    const out = execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, "--print", "%(title)s\t%(upload_date)s",
+    const out = execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, ...CLIENTS, "--print", "%(title)s\t%(upload_date)s",
       `https://www.youtube.com/watch?v=${id}`], { encoding: "utf8", env: ENV }).trim().split("\t");
     title = cleanTitle(out[0] || id);
     const d = (out[1] || "").trim();
     date = d.length === 8 ? `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}` : "";
-  } catch (e) { console.log(`  메타 실패: ${id}`); }
+  } catch (e) {
+    const err = (e.stderr || e.message || "").toString().replace(/\s+/g, " ").slice(0, 300);
+    console.log(`  메타 실패: ${id} — ${err}`);
+  }
 
   // 자막
   const txtPath = `${TDIR}/${id}.txt`;
   if (!existsSync(txtPath)) {
     try {
-      execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, "--skip-download", "--ignore-no-formats-error",
+      execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, ...CLIENTS, "--skip-download", "--ignore-no-formats-error",
         "--write-auto-sub", "--sub-langs", "ko-orig,ko", "--sub-format", "json3",
         "-o", `${TDIR}/sub_%(id)s.%(ext)s`, `https://www.youtube.com/watch?v=${id}`],
         { env: ENV });
