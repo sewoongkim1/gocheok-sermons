@@ -29,3 +29,6 @@ data/verses_live.json
 
 # 유튜브 쿠키(비밀 — 절대 커밋 금지)
 data/yt-cookies.txt
+
+# 로컬 키(비밀 — 절대 커밋 금지). 예시는 .env.example
+.env

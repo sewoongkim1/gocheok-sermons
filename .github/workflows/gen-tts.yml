@@ -1,0 +1,63 @@
+name: 설교 오디오 생성(단건)
+
+# data/audioscripts/<id>.txt 대본을 Azure 음성으로 MP3(public/audio/<id>.mp3)로 만들어
+# 커밋·Pages 배포한다. 유튜브 자막이 필요 없어서 봇차단(Actions IP)과 무관하게 항상 동작.
+# 사용: GitHub → Actions → "설교 오디오 생성(단건)" → Run → 영상 ID 입력
+
+on:
+  workflow_dispatch:
+    inputs:
+      id:
+        description: '영상 ID (data/audioscripts/<id>.txt 대본이 커밋돼 있어야 함)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: add-sermon
+  cancel-in-progress: false
+
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Azure 음성 생성
+        env:
+          AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
+        run: node scripts/tts-one.mjs "${{ inputs.id }}"
+
+      - name: 오디오 커밋
+        run: |
+          git config user.name "김세웅"
+          git config user.email "sewkim00@gmail.com"
+          git add public/audio
+          if git diff --cached --quiet; then
+            echo "변경 없음"
+          else
+            git commit -m "설교 오디오(단건): ${{ inputs.id }}"
+            git push
+          fi
+
+      - name: 빌드
+        run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
