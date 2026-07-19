@@ -46,7 +46,10 @@ jobs:
         run: |
           mkdir -p data
           if [ -n "$YT_COOKIES" ]; then
-            printf '%s\n' "$YT_COOKIES" > data/yt-cookies.txt
+            printf '%s' "$YT_COOKIES" > data/yt-cookies.raw
+            # JSON(브라우저 확장 내보내기)이든 Netscape든 yt-dlp 형식으로 정규화
+            python3 scripts/cookies-to-netscape.py data/yt-cookies.raw data/yt-cookies.txt
+            rm -f data/yt-cookies.raw
             echo "쿠키 파일 준비됨 ($(wc -l < data/yt-cookies.txt)줄)"
           else
             echo "⚠️ YT_COOKIES 시크릿 없음 — 쿠키 없이 진행(자막 실패 가능)"
