@@ -99,13 +99,22 @@ Deno.serve(async (req) => {
         return json({ ok: false, error: `GitHub ${gh.status}: ${(await gh.text()).slice(0, 200)}` }, 500);
       }
       case "importSermons": {
+        // ⚠️ 새 설교만 추가하고 기존 설교는 절대 덮어쓰지 않는다(ignoreDuplicates).
+        //    파이프라인(add-sermon→5-migrate)이 매번 전체를 재적재하는데, 예전엔
+        //    upsert가 기존 행을 덮어써서 admin/SQL로 고친 제목·일자·요약·맺음말이
+        //    실행 때마다 초기화됐다. DB를 편집의 소스오브트루스로 삼고 여기선 신규만 넣는다.
+        //    (기존 설교를 재처리하려면 admin에서 삭제 후 다시 추가)
         if (adminErr(b)) return json({ ok: false, error: "인증 실패" }, 403);
         const rows = (b.sermons || []).map(toRow);
+        let inserted = 0;
         for (let i = 0; i < rows.length; i += 200) {
-          const { error } = await db.from("sermons").upsert(rows.slice(i, i + 200), { onConflict: "id" });
+          const { data, error } = await db.from("sermons")
+            .upsert(rows.slice(i, i + 200), { onConflict: "id", ignoreDuplicates: true })
+            .select("id");
           if (error) throw error;
+          inserted += (data || []).length;
         }
-        return json({ ok: true, count: rows.length });
+        return json({ ok: true, count: rows.length, inserted });
       }
       default:
         return json({ ok: false, error: "알 수 없는 action" }, 400);
