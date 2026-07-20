@@ -15,7 +15,7 @@ const client = new Anthropic(); // ANTHROPIC_API_KEY 환경변수 사용
 const schema = {
   type: "object",
   additionalProperties: false,
-  required: ["scripture", "summary", "points", "keyVerse", "questions", "tags", "audioScript"],
+  required: ["scripture", "summary", "points", "keyVerse", "questions", "tags", "audioScript", "dailyMeditations"],
   properties: {
     scripture: { type: "string" },
     summary: { type: "string" },
@@ -35,6 +35,19 @@ const schema = {
     questions: { type: "array", items: { type: "string" } },
     tags: { type: "array", items: { type: "string" } },
     audioScript: { type: "string" },
+    // 한 주(7일) 매일 다른 묵상 — 암송앱 '오늘의 묵상'이 요일별로 하나씩 보여준다.
+    dailyMeditations: {
+      type: "array",
+      items: {
+        type: "object", additionalProperties: false,
+        required: ["heading", "message", "question"],
+        properties: {
+          heading: { type: "string" },
+          message: { type: "string" },
+          question: { type: "string" },
+        },
+      },
+    },
   },
 };
 
@@ -47,6 +60,10 @@ const SYSTEM = `당신은 고척교회 설교를 정리하는 편집자입니다
 - questions: 삶에 적용할 질문 3개
 - tags: 주제 태그 5~6개
 - audioScript: 귀로 듣기 좋은 3분 나레이션 대본(약 850~1000자, 서술형 존댓말). "고척교회 말씀 아카이브" 같은 앱/채널 소개 문구로 시작하지 말고, 바로 오늘의 설교 제목·본문 소개로 자연스럽게 시작(예: "오늘의 설교는 …입니다. 본문은 …"). 화면 텍스트를 그대로 읽지 말고 음성 원고로.
+- dailyMeditations: 이 설교로 한 주 동안 **매일 다르게** 묵상할 **정확히 7개**. 각 항목은
+  heading(짧은 제목 6~14자), message(존댓말 묵상글 2~3문장·100~150자), question(삶에 적용할 질문 1개).
+  순서는 주일→토요일의 흐름으로: 1번은 설교를 여는 도입, 2~6번은 핵심을 날마다 다른 각도로,
+  7번은 한 주를 마무리하는 격려. 설교에 실제로 나온 내용·예화만 쓰고 매일 내용이 겹치지 않게 하세요.
 설교 내용에 충실하고, 없는 내용을 지어내지 마세요.`;
 
 const meta = JSON.parse(readFileSync("data/meta.json", "utf8"));
