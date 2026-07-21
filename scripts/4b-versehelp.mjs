@@ -92,6 +92,13 @@ for (const s of sermons) {
       messages: [{ role: "user", content: ctx }],
     });
     const help = JSON.parse(res.content.find((b) => b.type === "text").text);
+    // 불량 출력 가드 — 모델이 드물게 "어색"·"placeholder" 같은 한두 마디만 낸다.
+    // 스키마는 통과하므로(둘 다 string) 길이로 걸러 다음 실행 때 다시 만들게 둔다.
+    const bad = (t, min) => !t || t.trim().length < min || /^(placeholder|todo|어색|없음)$/i.test(t.trim());
+    if (bad(help.easyExplain, 80) || bad(help.memoryTip, 60)) {
+      console.log(`  ✗ ${s.id} 출력이 부실해 건너뜀 (easy ${(help.easyExplain||"").length}자 / tip ${(help.memoryTip||"").length}자) — 다시 실행하면 재시도합니다`);
+      continue;
+    }
     s.easyExplain = help.easyExplain;
     s.memoryTip = help.memoryTip;
     count++;
