@@ -41,6 +41,7 @@ step("① 자막·메타(로컬 IP, 쿠키 불필요)", ["scripts/add-video.mjs"
 step("② AI 노트(요약·핵심·맺음말·대본)", ["scripts/2-notes.mjs"]);
 step("③ Azure 음성(3분 요약 MP3)", ["scripts/3-tts.mjs"]);
 step("④ 암송 구절 매칭", ["scripts/4-link.mjs"]);
+step("④-b 암송 도우미(쉬운 풀이·기억법)", ["scripts/4b-versehelp.mjs"]);
 step("⑤ DB 적재(sermons 테이블)", ["scripts/5-migrate.mjs"]);
 
 // 오디오·데이터 커밋·푸시 → Pages가 sermon.onlybible.kr 에 MP3 배포

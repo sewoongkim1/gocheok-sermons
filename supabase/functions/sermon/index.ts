@@ -24,6 +24,8 @@ const toApp = (r: any) => ({
   points: r.points || [], keyVerse: r.key_verse || null,
   questions: r.questions || [], tags: r.tags || [],
   dailyMeditations: r.daily_meditations || [],   // 한 주 7일치 묵상(암송앱 '오늘의 묵상')
+  easyExplain: r.easy_explain || "",             // 암송구절 쉬운 풀이(암송앱 도우미)
+  memoryTip: r.memory_tip || "",                 // 암송 기억법(암송앱 도우미)
   audioScript: r.audio_script || "", audio: r.audio || undefined,
   memVerseNo: r.mem_verse_no ?? undefined, memRef: r.mem_ref ?? undefined, memText: r.mem_text ?? undefined,
 });
@@ -36,6 +38,8 @@ const toRow = (s: any) => ({
   points: s.points || [], key_verse: s.keyVerse || s.key_verse || null,
   questions: s.questions || [], tags: s.tags || [],
   daily_meditations: s.dailyMeditations || s.daily_meditations || [],
+  easy_explain: s.easyExplain || s.easy_explain || null,
+  memory_tip: s.memoryTip || s.memory_tip || null,
   audio_script: s.audioScript || s.audio_script || null, audio: s.audio || null,
   mem_verse_no: s.memVerseNo ?? s.mem_verse_no ?? null,
   mem_ref: s.memRef ?? s.mem_ref ?? null, mem_text: s.memText ?? s.mem_text ?? null,
