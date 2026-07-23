@@ -166,6 +166,12 @@
   }
 
   const fmtDate = (d: string) => (d ? d.replace(/-/g, '.').slice(2) : '')
+
+  // **굵게** 마크다운을 <strong>으로 (먼저 이스케이프 → XSS 방지).
+  const emph = (raw: string) =>
+    String(raw == null ? '' : raw)
+      .replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
 </script>
 
 <div class="min-h-screen">
@@ -296,7 +302,7 @@
       <p
         class="mt-5 rounded-xl border-l-3 border-gold bg-raise px-4 py-3 leading-relaxed text-ink-soft"
       >
-        {selected.summary}
+        {@html emph(selected.summary)}
       </p>
 
       <!-- 핵심 포인트 -->
@@ -309,7 +315,7 @@
                 <span class="font-mono text-sm font-bold text-gold">{i + 1}</span>
                 <h4 class="font-semibold tracking-tight text-ink">{p.heading}</h4>
               </div>
-              <p class="mt-2 pl-6 leading-relaxed text-ink-soft">{p.body}</p>
+              <p class="mt-2 pl-6 leading-relaxed text-ink-soft">{@html emph(p.body)}</p>
             </li>
           {/each}
         </ol>
@@ -390,7 +396,7 @@
               <div class="mt-1 text-sm text-ink-soft">
                 {s.preacher} · 📖 {s.scripture}
               </div>
-              <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-mute">{s.summary}</p>
+              <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-mute">{@html emph(s.summary)}</p>
             </button>
             <button
               onclick={() => toggleFav(s.id)}
