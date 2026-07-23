@@ -15,10 +15,11 @@ const client = new Anthropic(); // ANTHROPIC_API_KEY 환경변수 사용
 const schema = {
   type: "object",
   additionalProperties: false,
-  required: ["scripture", "summary", "points", "keyVerse", "questions", "tags", "audioScript", "dailyMeditations"],
+  required: ["scripture", "summary", "points", "conclusion", "keyVerse", "questions", "tags", "audioScript", "dailyMeditations"],
   properties: {
     scripture: { type: "string" },
     summary: { type: "string" },
+    conclusion: { type: "string" },
     points: {
       type: "array",
       items: {
@@ -56,6 +57,7 @@ const SYSTEM = `당신은 고척교회 설교를 정리하는 편집자입니다
 - scripture: 본문 성경구절 (예: "누가복음 5:1-11")
 - summary: 설교 전체를 관통하는 한 줄 요약
 - points: 핵심 3~4점. 각 heading(소제목)과 body(2~3문장 설명)
+- conclusion: 설교를 마무리하는 맺음말 2~3문장(존댓말). 설교의 결론 예화나 마지막 권면을 살려, 삶으로 초대하는 따뜻한 어조로.
 - keyVerse: 설교의 핵심 성구 하나 (ref=장절, text=본문)
 - questions: 삶에 적용할 질문 3개
 - tags: 주제 태그 5~6개
@@ -64,7 +66,7 @@ const SYSTEM = `당신은 고척교회 설교를 정리하는 편집자입니다
   heading(짧은 제목 6~14자), message(존댓말 묵상글 2~3문장·100~150자), question(삶에 적용할 질문 1개).
   순서는 주일→토요일의 흐름으로: 1번은 설교를 여는 도입, 2~6번은 핵심을 날마다 다른 각도로,
   7번은 한 주를 마무리하는 격려. 설교에 실제로 나온 내용·예화만 쓰고 매일 내용이 겹치지 않게 하세요.
-강조: summary, 각 point의 body, 각 dailyMeditation의 message에서 가장 핵심이 되는 문구를 **굵게**(양쪽에 별표 두 개, 예: **핵심 문구**) 표시하세요. 한 항목에 한두 군데만, 남용하지 마세요. audioScript(음성 대본)에는 별표를 넣지 마세요.
+강조: summary, 각 point의 body, conclusion, 각 dailyMeditation의 message에서 가장 핵심이 되는 문구를 **굵게**(양쪽에 별표 두 개, 예: **핵심 문구**) 표시하세요. 한 항목에 한두 군데만, 남용하지 마세요. audioScript(음성 대본)에는 별표를 넣지 마세요.
 설교 내용에 충실하고, 없는 내용을 지어내지 마세요.`;
 
 const meta = JSON.parse(readFileSync("data/meta.json", "utf8"));

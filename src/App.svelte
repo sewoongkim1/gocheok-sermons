@@ -321,6 +321,18 @@
         </ol>
       </section>
 
+      <!-- 맺음말(있는 설교만) -->
+      {#if selected.conclusion}
+        <section class="mt-7">
+          <h3 class="font-mono text-xs tracking-[0.12em] text-ink-mute uppercase">맺음말</h3>
+          <p
+            class="mt-3 rounded-xl border-l-3 border-navy bg-raise px-4 py-3 font-serif leading-relaxed text-ink"
+          >
+            {@html emph(selected.conclusion)}
+          </p>
+        </section>
+      {/if}
+
       <!-- 핵심 구절(암송구절이 있으면 그것을 표시) -->
       <section class="mt-6 rounded-xl bg-navy px-5 py-5 text-white">
         <div class="font-mono text-[11px] tracking-[0.14em] text-gold-2 uppercase">
