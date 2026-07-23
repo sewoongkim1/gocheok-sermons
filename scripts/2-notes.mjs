@@ -83,7 +83,8 @@ for (const m of meta) {
   try {
     const res = await client.messages.create({
       model: MODEL,
-      max_tokens: 2500,
+      max_tokens: 6000, // 요약+요점+7일 묵상+3분 대본이면 2500으로는 잘려 JSON 파싱 실패
+
       system: SYSTEM,
       output_config: { format: { type: "json_schema", schema } },
       messages: [{ role: "user", content: `제목: ${m.title}\n\n[설교 자막]\n${transcript}` }],
