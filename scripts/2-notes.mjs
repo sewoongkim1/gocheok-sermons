@@ -73,35 +73,44 @@ const meta = JSON.parse(readFileSync("data/meta.json", "utf8"));
 const existing = existsSync(OUT) ? JSON.parse(readFileSync(OUT, "utf8")) : [];
 const byId = new Map(existing.map((s) => [s.id, s]));
 
-let count = 0;
+// 처리 대상을 먼저 추린 뒤, 동시 CONC편씩 병렬 생성(단일 프로세스라 파일 쓰기는 순차 → 경합 없음)
+const tasks = [];
 for (const m of meta) {
-  if (count >= LIMIT) break;
+  if (tasks.length >= LIMIT) break;
   if (byId.get(m.id)?.summary) { console.log(`  건너뜀(이미 있음): ${m.id}`); continue; }
   const tPath = `data/transcripts/${m.id}.txt`;
   if (!existsSync(tPath)) { console.log(`  건너뜀(자막 없음): ${m.id}`); continue; }
   const transcript = readFileSync(tPath, "utf8");
   if (transcript.length < 300) { console.log(`  건너뜀(자막 짧음): ${m.id}`); continue; }
+  tasks.push({ m, transcript });
+}
 
-  try {
-    const res = await client.messages.create({
-      model: MODEL,
-      max_tokens: 6000, // 요약+요점+7일 묵상+3분 대본이면 2500으로는 잘려 JSON 파싱 실패
-
-      system: SYSTEM,
-      output_config: { format: { type: "json_schema", schema } },
-      messages: [{ role: "user", content: `제목: ${m.title}\n\n[설교 자막]\n${transcript}` }],
-    });
-    const note = JSON.parse(res.content.find((b) => b.type === "text").text);
-    byId.set(m.id, {
-      id: m.id, title: m.title, preacher: PREACHER, series: SERIES, date: m.date || "",
-      ...note,
-    });
-    count++;
-    console.log(`  ✓ ${m.id} (${count}) ${m.title}`);
-    // 진행 중에도 저장(중단 대비)
-    writeFileSync(OUT, JSON.stringify([...byId.values()], null, 2), "utf8");
-  } catch (e) {
-    console.log(`  ✗ ${m.id} 실패: ${e.message}`);
+let count = 0;
+const CONC = Math.max(1, Number(process.env.NOTES_CONCURRENCY || 4));
+async function worker() {
+  while (tasks.length) {
+    const { m, transcript } = tasks.shift();
+    try {
+      const res = await client.messages.create({
+        model: MODEL,
+        max_tokens: 6000, // 요약+요점+7일 묵상+3분 대본이면 2500으로는 잘려 JSON 파싱 실패
+        system: SYSTEM,
+        output_config: { format: { type: "json_schema", schema } },
+        messages: [{ role: "user", content: `제목: ${m.title}\n\n[설교 자막]\n${transcript}` }],
+      });
+      const note = JSON.parse(res.content.find((b) => b.type === "text").text);
+      byId.set(m.id, {
+        id: m.id, title: m.title, preacher: PREACHER, series: SERIES, date: m.date || "",
+        ...note,
+      });
+      count++;
+      console.log(`  ✓ ${m.id} (${count}/${count + tasks.length}) ${m.title}`);
+      // 진행 중에도 저장(중단 대비)
+      writeFileSync(OUT, JSON.stringify([...byId.values()], null, 2), "utf8");
+    } catch (e) {
+      console.log(`  ✗ ${m.id} 실패: ${e.message}`);
+    }
   }
 }
+await Promise.all(Array.from({ length: CONC }, worker));
 console.log(`\n완료: ${count}편 생성 → ${OUT} (총 ${byId.size}편)`);

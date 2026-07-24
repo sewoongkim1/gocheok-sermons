@@ -55,21 +55,31 @@ async function synth(text, outPath) {
 }
 
 const sermons = JSON.parse(readFileSync(OUT, "utf8"));
-let count = 0;
+// 처리 대상을 먼저 추린 뒤, 동시 CONC편씩 병렬 생성(단일 프로세스라 sermons.json 쓰기는 순차 → 경합 없음)
+const tasks = [];
 for (const s of sermons) {
-  if (count >= LIMIT) break;
+  if (tasks.length >= LIMIT) break;
   if (!s.audioScript) continue;
   const rel = `audio/${s.id}.mp3`;
   const abs = `${ADIR}/${s.id}.mp3`;
   if (!process.env.FORCE && existsSync(abs) && s.audio === rel) { console.log(`  건너뜀(있음): ${s.id}`); continue; }
-  try {
-    await synth(s.audioScript, abs);
-    s.audio = rel;
-    count++;
-    console.log(`  ✓ ${s.id} (${count}) ${s.title}`);
-    writeFileSync(OUT, JSON.stringify(sermons, null, 2), "utf8");
-  } catch (e) {
-    console.log(`  ✗ ${s.id} 실패: ${e.message}`);
+  tasks.push({ s, rel, abs });
+}
+let count = 0;
+const CONC = Math.max(1, Number(process.env.TTS_CONCURRENCY || 4));
+async function worker() {
+  while (tasks.length) {
+    const { s, rel, abs } = tasks.shift();
+    try {
+      await synth(s.audioScript, abs);
+      s.audio = rel;
+      count++;
+      console.log(`  ✓ ${s.id} (${count}/${count + tasks.length}) ${s.title}`);
+      writeFileSync(OUT, JSON.stringify(sermons, null, 2), "utf8");
+    } catch (e) {
+      console.log(`  ✗ ${s.id} 실패: ${e.message}`);
+    }
   }
 }
+await Promise.all(Array.from({ length: CONC }, worker));
 console.log(`\n완료: ${count}편 음성 생성 → ${ADIR}/`);
