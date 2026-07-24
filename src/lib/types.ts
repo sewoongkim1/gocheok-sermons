@@ -10,6 +10,7 @@ export interface SermonNote {
   preacher: string // 설교자
   series?: string // (구) 시리즈 — 번들 폴백 호환용
   category?: string // 구분: 주일설교/금요성령집회/새벽기도회/송구영신예배 (테이블)
+  startSec?: number // 라이브 실황에서 설교가 시작되는 초 — 있으면 임베드가 이 시점부터 재생(번들에서 병합)
   date: string // YYYY-MM-DD 예배일 (없으면 "")
   scripture: string // 본문 (예: "누가복음 5:1-11")
   summary: string // 한 줄 요약

@@ -5,10 +5,14 @@
 
   // 테이블 우선(캐시→즉시 표시, 백그라운드 갱신), 실패 시 번들 폴백
   const CACHE_KEY = 'sermon_cache_v1'
+  // startSec(설교 시작 시점)은 번들(sermons.json)에만 있고 서버 응답엔 없다 — 어느 경로로 오든 병합해 준다.
+  const startById = new Map((bundled as any[]).filter((b) => b.startSec).map((b) => [b.id, b.startSec as number]))
+  const withStart = (rows: SermonNote[]): SermonNote[] =>
+    rows.map((r) => (startById.has(r.id) && !(r as any).startSec ? { ...r, startSec: startById.get(r.id) } : r))
   function loadInitial(): SermonNote[] {
     try {
       const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null')
-      if (Array.isArray(c) && c.length) return c
+      if (Array.isArray(c) && c.length) return withStart(c)
     } catch {}
     return bundled as SermonNote[]
   }
@@ -23,7 +27,7 @@
     getSermons()
       .then((rows) => {
         if (rows.length) {
-          sermons = rows
+          sermons = withStart(rows)
           try {
             localStorage.setItem(CACHE_KEY, JSON.stringify(rows))
           } catch {}
@@ -168,7 +172,7 @@
   const fmtDate = (d: string) => (d ? d.replace(/-/g, '.').slice(2) : '')
 
   // 배포마다 하나씩 올린다 — 헤더에 작게 표시되어 구버전 캐시 여부를 바로 확인할 수 있다.
-  const APP_VER = 'v1.1'
+  const APP_VER = 'v1.2'
 
   // **굵게** 마크다운을 <strong>으로 (먼저 이스케이프 → XSS 방지).
   const emph = (raw: string) =>
