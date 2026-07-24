@@ -211,7 +211,7 @@
         <div class="aspect-video">
           <iframe
             class="h-full w-full"
-            src={`https://www.youtube-nocookie.com/embed/${selected.id}`}
+            src={`https://www.youtube-nocookie.com/embed/${selected.id}${selected.startSec ? `?start=${selected.startSec}` : ''}`}
             title={selected.title}
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
