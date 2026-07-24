@@ -167,6 +167,9 @@
 
   const fmtDate = (d: string) => (d ? d.replace(/-/g, '.').slice(2) : '')
 
+  // 배포마다 하나씩 올린다 — 헤더에 작게 표시되어 구버전 캐시 여부를 바로 확인할 수 있다.
+  const APP_VER = 'v1.1'
+
   // **굵게** 마크다운을 <strong>으로 (먼저 이스케이프 → XSS 방지).
   const emph = (raw: string) =>
     String(raw == null ? '' : raw)
@@ -183,7 +186,7 @@
           Gocheok · Sermon Notes
         </div>
         <h1 class="mt-0.5 text-lg font-bold tracking-tight text-white">
-          고척교회 말씀 아카이브
+          고척교회 말씀 아카이브 <span class="ml-1 align-middle text-[10px] font-normal text-white/50">{APP_VER}</span>
         </h1>
       </div>
       <button
