@@ -9,14 +9,14 @@ const ADMIN = process.env.SERMON_ADMIN || "";
 
 // 제목에서 "YYYY.MM.DD " 날짜 분리 + 구분(category) 판별
 function separate(s) {
-  let title = (s.title || "").trim();
+  let title = (s.title || "").normalize("NFC").trim();
   let date = s.date || "";
   const m = title.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+/);
   if (m) {
     date = `${m[1]}-${m[2]}-${m[3]}`; // 제목의 날짜가 실제 예배일 → 우선
     title = title.slice(m[0].length).trim();
   }
-  title = title.replace(/\s*l\s*차동혁.*$/i, "").trim(); // "l 차동혁위임목사" 꼬리 제거
+  title = title.replace(/\s*[lIㅣ|]+\s*[차치]동혁\s*(위임|담임)?\s*목사(님)?\s*$/, "").trim(); // 목사님 꼬리표 제거(모든 구분자·오타 변형)
   let category = "주일설교";
   if (/송구영신/.test(title)) category = "송구영신예배";
   else if (/새벽기도/.test(title)) category = "새벽기도회";

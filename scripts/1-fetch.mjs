@@ -19,7 +19,8 @@ mkdirSync(TDIR, { recursive: true });
 
 // 영어판(같은 설교의 번역본)은 제외
 const isEnglish = (t) => /Gocheok Church|Senior Pastor|Pastor Cha/i.test(t);
-const cleanTitle = (t) => t.replace(/^\[고척교회\]\s*/, "").replace(/[ㅣ|].*$/, "").trim();
+// NFC 정규화(유튜브 제목이 NFD로 와서 검색·비교가 깨짐) + 목사님 꼬리표(l/I/ㅣ/| 구분자, 치동혁 오타 포함) 제거
+const cleanTitle = (t) => t.normalize("NFC").replace(/^\[고척교회\]\s*/, "").replace(/\s*[lIㅣ|]+\s*[차치]동혁\s*(위임|담임)?\s*목사(님)?\s*$/, "").replace(/[ㅣ|].*$/, "").trim();
 
 console.log("설교 목록 가져오는 중…");
 const raw = execFileSync("yt-dlp", [

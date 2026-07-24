@@ -15,7 +15,8 @@ const CLIENTS = ["--extractor-args",
 const ids = process.argv.slice(2);
 if (!ids.length) { console.error("영상 ID를 인자로 주세요."); process.exit(1); }
 
-const cleanTitle = (t) => t.replace(/^\[고척교회\]\s*/, "").replace(/[ㅣ|].*$/, "").trim();
+// NFC 정규화 + 목사님 꼬리표(l/I/ㅣ/| 구분자, 치동혁 오타 포함) 제거 — 1-fetch.mjs와 동일 규칙
+const cleanTitle = (t) => t.normalize("NFC").replace(/^\[고척교회\]\s*/, "").replace(/\s*[lIㅣ|]+\s*[차치]동혁\s*(위임|담임)?\s*목사(님)?\s*$/, "").replace(/[ㅣ|].*$/, "").trim();
 const meta = existsSync("data/meta.json") ? JSON.parse(readFileSync("data/meta.json", "utf8")) : [];
 const byId = new Map(meta.map((m) => [m.id, m]));
 
