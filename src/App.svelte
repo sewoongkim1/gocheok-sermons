@@ -172,7 +172,7 @@
   const fmtDate = (d: string) => (d ? d.replace(/-/g, '.').slice(2) : '')
 
   // 배포마다 하나씩 올린다 — 헤더에 작게 표시되어 구버전 캐시 여부를 바로 확인할 수 있다.
-  const APP_VER = 'v1.2'
+  const APP_VER = 'v1.3'
 
   // **굵게** 마크다운을 <strong>으로 (먼저 이스케이프 → XSS 방지).
   const emph = (raw: string) =>
@@ -225,6 +225,16 @@
             allowfullscreen
           ></iframe>
         </div>
+      </div>
+      <div class="mt-2 flex justify-end">
+        <a
+          class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-sm text-ink-soft transition hover:text-ink"
+          href={`https://youtu.be/${selected.id}${selected.startSec ? `?t=${selected.startSec}` : ''}`}
+          target="_blank"
+          rel="noopener"
+        >
+          ▶ 유튜브에서 보기{selected.startSec ? ' (설교부터)' : ''}
+        </a>
       </div>
 
       <!-- 제목 블록 -->
