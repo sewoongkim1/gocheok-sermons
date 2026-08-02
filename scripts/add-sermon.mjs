@@ -1,4 +1,4 @@
-// 새 설교 1편을 한 번에 추가: 자막→AI노트→Azure음성→암송매칭→암송도우미→테이블 적재
+// 새 설교 1편을 한 번에 추가: 자막→AI노트→Azure음성→암송매칭→암송도우미→테이블 적재→챗봇 색인
 // 사용법:
 //   ANTHROPIC_API_KEY=... AZURE_SPEECH_KEY=... AZURE_SPEECH_REGION=koreacentral SERMON_ADMIN=... \
 //     node scripts/add-sermon.mjs <유튜브링크 또는 영상ID>
@@ -27,6 +27,8 @@ execFileSync("node", ["scripts/4-link.mjs"], { stdio: "inherit", env: process.en
 execFileSync("node", ["scripts/4b-versehelp.mjs"], { stdio: "inherit", env: process.env });
 // 5) 테이블 적재(전체 upsert — 새 편 포함)
 execFileSync("node", ["scripts/5-migrate.mjs"], { stdio: "inherit", env: process.env });
+// 6) 벡터 색인('내게 주시는 말씀' 챗봇 검색용, 이번 편만)
+execFileSync("node", ["scripts/6-embed.mjs", id], { stdio: "inherit", env: process.env });
 
-console.log(`\n✅ 완료! 테이블에 반영됨. 오디오 파일은 커밋·푸시하면 sermon.onlybible.kr에 배포됩니다:`);
+console.log(`\n✅ 완료! 테이블·챗봇 색인에 반영됨. 오디오 파일은 커밋·푸시하면 sermon.onlybible.kr에 배포됩니다:`);
 console.log(`   git add public/audio src/data/sermons.json && git commit -m "설교 추가: ${id}" && git push`);
