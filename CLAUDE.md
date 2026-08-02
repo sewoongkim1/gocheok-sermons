@@ -12,14 +12,15 @@
   - 앱은 **getSermons로 fetch**(localStorage 캐시→즉시표시, 백그라운드 갱신), 실패 시 `src/data/sermons.json` 번들 폴백
 
 ## 데이터 파이프라인 (scripts/)
-설교 영상 → 자막 → AI노트 → 음성 → 암송매칭 → 테이블. 키 3개 필요: `ANTHROPIC_API_KEY`, `AZURE_SPEECH_KEY`(+`AZURE_SPEECH_REGION=koreacentral`), `SERMON_ADMIN`(관리자 비번).
+설교 영상 → 자막 → AI노트 → 음성 → 암송매칭 → 암송도우미 → 테이블. 키 3개 필요: `ANTHROPIC_API_KEY`, `AZURE_SPEECH_KEY`(+`AZURE_SPEECH_REGION=koreacentral`), `SERMON_ADMIN`(관리자 비번).
 - `1-fetch.mjs [n]` — 주일설교 재생목록에서 자막 수집(`SERMON_YEAR=2026`로 연도 필터). 영어판 제외
 - `add-video.mjs <id...>` — 재생목록에 없는 개별 영상 추가(신년예배 등)
 - `2-notes.mjs` — 자막 → Claude(`claude-opus-4-8`, structured outputs)로 노트 JSON
 - `3-tts.mjs` — audioScript → Azure 뉴럴 음성(ko-KR-SunHiNeural) MP3 → public/audio/
 - `4-link.mjs` — 성경암송 `verses` 테이블 url의 영상ID로 매칭 → memVerseNo·memRef·memText
+- `4b-versehelp.mjs` — 암송구절 연결된 편만 Claude로 쉬운 풀이(easyExplain)·기억법(memoryTip) 생성(암송앱 암송화면 도우미 탭). 지난 편 백필은 `data/verse_help_update.sql`을 Supabase SQL Editor에서 실행(5-migrate로 백필 금지 — conclusion·daily_meditations 등 DB전용 필드가 null로 덮임)
 - `5-migrate.mjs` — 제목에서 날짜·구분(category) 분리 후 `importSermons`로 테이블 적재
-- **`add-sermon.mjs <url>`** — 위 전체를 한 방에(새 설교 1편 추가용)
+- **`add-sermon.mjs <url>`** — 위 전체를 한 방에(새 설교 1편 추가용, 2026-08-02부터 4b-versehelp 포함)
 - `og-gen.mjs` / `icon-gen.mjs` — OG 썸네일·PWA 아이콘 생성(연한 파랑 배경, sharp)
 
 ## 새 설교 추가 방법

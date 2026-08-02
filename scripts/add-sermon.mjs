@@ -1,4 +1,4 @@
-// 새 설교 1편을 한 번에 추가: 자막→AI노트→Azure음성→암송매칭→테이블 적재
+// 새 설교 1편을 한 번에 추가: 자막→AI노트→Azure음성→암송매칭→암송도우미→테이블 적재
 // 사용법:
 //   ANTHROPIC_API_KEY=... AZURE_SPEECH_KEY=... AZURE_SPEECH_REGION=koreacentral SERMON_ADMIN=... \
 //     node scripts/add-sermon.mjs <유튜브링크 또는 영상ID>
@@ -20,10 +20,11 @@ const run = (label, script, env = {}) => {
 console.log(`설교 추가: ${id}`);
 // 1) 자막·메타
 execFileSync("node", ["scripts/add-video.mjs", id], { stdio: "inherit", env: process.env });
-// 2) AI 노트(신규만) 3) 음성(신규만) 4) 암송 매칭
+// 2) AI 노트(신규만) 3) 음성(신규만) 4) 암송 매칭 4b) 암송구절 도우미(쉬운 풀이·기억법, 신규만)
 execFileSync("node", ["scripts/2-notes.mjs"], { stdio: "inherit", env: process.env });
 execFileSync("node", ["scripts/3-tts.mjs"], { stdio: "inherit", env: process.env });
 execFileSync("node", ["scripts/4-link.mjs"], { stdio: "inherit", env: process.env });
+execFileSync("node", ["scripts/4b-versehelp.mjs"], { stdio: "inherit", env: process.env });
 // 5) 테이블 적재(전체 upsert — 새 편 포함)
 execFileSync("node", ["scripts/5-migrate.mjs"], { stdio: "inherit", env: process.env });
 
