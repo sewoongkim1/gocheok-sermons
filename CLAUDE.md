@@ -6,6 +6,7 @@
 - **Vite + Svelte 5 + TypeScript + Tailwind v4** (첫 모던 스택 앱)
 - **GitHub Pages** 배포: repo `sewoongkim1/gocheok-sermons`, 커스텀 도메인 **sermon.onlybible.kr** (public/CNAME, base='/')
 - 푸시 → GitHub Actions(`.github/workflows/deploy.yml`)가 `vite build` → Pages 배포
+- **앱 버전은 `index.html`의 `.splash-ver` 한 곳만** 배포마다 +0.1 (스플래시에 표시). 자산 캐시는 Vite 해시 파일명이 처리하므로 별도 캐시태그 불필요
 - **백엔드: Supabase 통합 프로젝트 `xnomlgydifiqiybervtf`** (성경암송·찬양과 공유)
   - Edge Function **`sermon`**: getSermons(공개) / adminList·saveSermon·deleteSermon·importSermons(관리자, secret=ADMIN_SECRET) / authCheck
   - 테이블 **`sermons`** (schema.sql): id·title·svc_date·category·preacher·scripture·summary·points·key_verse·questions·tags·audio_script·audio·mem_verse_no·mem_ref·mem_text·hidden

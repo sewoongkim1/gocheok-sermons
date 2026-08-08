@@ -209,8 +209,8 @@
 
   const fmtDate = (d: string) => (d ? d.replace(/-/g, '.').slice(2) : '')
 
-  // 배포마다 하나씩 올린다 — 헤더에 작게 표시되어 구버전 캐시 여부를 바로 확인할 수 있다.
-  const APP_VER = 'v1.5'
+  // 앱 버전은 index.html 스플래시(.splash-ver) 한 곳에서만 관리한다.
+  // 예전엔 여기에도 따로 두어 헤더와 스플래시 표기가 어긋났다.
 
   // **굵게** 마크다운을 <strong>으로 (먼저 이스케이프 → XSS 방지).
   const emph = (raw: string) =>
@@ -227,8 +227,7 @@
         <div class="font-mono text-[11px] tracking-[0.18em] text-gold-2 uppercase">
           Sermon Notes
         </div>
-        <!-- 버전은 title 속성으로만 — 좁은 화면에서 제목이 두 줄로 접히지 않게 -->
-        <h1 class="mt-0.5 text-lg font-bold tracking-tight whitespace-nowrap text-white" title={APP_VER}>
+        <h1 class="mt-0.5 text-lg font-bold tracking-tight whitespace-nowrap text-white">
           말씀 아카이브
         </h1>
       </div>
