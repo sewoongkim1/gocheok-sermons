@@ -169,10 +169,48 @@
     root.setAttribute('data-theme', theme)
   }
 
+  // ── 형제 앱(성경말씀 암송) 연결 ──
+  const MEMORIZE_URL = 'https://gocheok.onlybible.kr/'
+
+  let toastMsg = $state('')
+  let toastTimer: ReturnType<typeof setTimeout> | null = null
+  function toast(msg: string) {
+    if (toastTimer) clearTimeout(toastTimer)
+    toastMsg = msg
+    toastTimer = setTimeout(() => (toastMsg = ''), 2000)
+  }
+
+  function goMemorize() {
+    location.href = MEMORIZE_URL
+  }
+
+  // 공유는 암송 앱을 알리는 게 목적이라 대상 링크가 이 사이트가 아니라 암송 앱이다.
+  async function shareMemorize() {
+    const data = {
+      title: '고척교회 성경말씀 암송',
+      text: '말씀을 마음에 새겨요 — 함께 성경암송! 📖',
+      url: MEMORIZE_URL,
+    }
+    if (navigator.share) {
+      try {
+        await navigator.share(data)
+      } catch {
+        /* 사용자가 취소한 경우 — 아무것도 하지 않는다 */
+      }
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(MEMORIZE_URL)
+      toast('링크가 복사되었어요! 📋')
+    } catch {
+      window.prompt('이 링크를 복사하세요', MEMORIZE_URL)
+    }
+  }
+
   const fmtDate = (d: string) => (d ? d.replace(/-/g, '.').slice(2) : '')
 
   // 배포마다 하나씩 올린다 — 헤더에 작게 표시되어 구버전 캐시 여부를 바로 확인할 수 있다.
-  const APP_VER = 'v1.3'
+  const APP_VER = 'v1.4'
 
   // **굵게** 마크다운을 <strong>으로 (먼저 이스케이프 → XSS 방지).
   const emph = (raw: string) =>
@@ -194,6 +232,25 @@
         </h1>
       </div>
       <button
+        onclick={goMemorize}
+        class="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/90 transition hover:bg-white/10"
+        aria-label="성경말씀 암송으로 가기"
+        title="성경말씀 암송으로 가기"
+      >
+        📖
+      </button>
+      <button
+        onclick={shareMemorize}
+        class="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/90 transition hover:bg-white/10"
+        aria-label="고척교회 성경말씀 암송 공유하기"
+        title="고척교회 성경말씀 암송 공유하기"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"></line>
+        </svg>
+      </button>
+      <button
         onclick={toggleTheme}
         class="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/90 transition hover:bg-white/10"
         aria-label="테마 전환"
@@ -202,6 +259,12 @@
       </button>
     </div>
   </header>
+
+  {#if toastMsg}
+    <div class="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-black/80 px-4 py-2 text-sm text-white shadow-lg">
+      {toastMsg}
+    </div>
+  {/if}
 
   {#if selected}
     <!-- ── 상세: AI 설교 노트 ── -->
