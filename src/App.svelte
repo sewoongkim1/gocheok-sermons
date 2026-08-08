@@ -210,7 +210,7 @@
   const fmtDate = (d: string) => (d ? d.replace(/-/g, '.').slice(2) : '')
 
   // 배포마다 하나씩 올린다 — 헤더에 작게 표시되어 구버전 캐시 여부를 바로 확인할 수 있다.
-  const APP_VER = 'v1.4'
+  const APP_VER = 'v1.5'
 
   // **굵게** 마크다운을 <strong>으로 (먼저 이스케이프 → XSS 방지).
   const emph = (raw: string) =>
@@ -225,10 +225,11 @@
     <div class="mx-auto flex max-w-3xl items-center gap-3 px-5 py-4">
       <div class="flex-1">
         <div class="font-mono text-[11px] tracking-[0.18em] text-gold-2 uppercase">
-          Gocheok · Sermon Notes
+          Sermon Notes
         </div>
-        <h1 class="mt-0.5 text-lg font-bold tracking-tight text-white">
-          고척교회 말씀 아카이브 <span class="ml-1 align-middle text-[10px] font-normal text-white/50">{APP_VER}</span>
+        <!-- 버전은 title 속성으로만 — 좁은 화면에서 제목이 두 줄로 접히지 않게 -->
+        <h1 class="mt-0.5 text-lg font-bold tracking-tight whitespace-nowrap text-white" title={APP_VER}>
+          말씀 아카이브
         </h1>
       </div>
       <button
