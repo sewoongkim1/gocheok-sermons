@@ -235,32 +235,31 @@
           <span class="truncate text-[11px] text-white/75">고척교회 · 주일 설교</span>
         </div>
       </div>
-      <button
-        onclick={goMemorize}
-        class="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/90 transition hover:bg-white/10"
-        aria-label="성경말씀 암송으로 가기"
-        title="성경말씀 암송으로 가기"
-      >
-        📖
-      </button>
-      <button
-        onclick={shareMemorize}
-        class="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/90 transition hover:bg-white/10"
-        aria-label="고척교회 성경말씀 암송 공유하기"
-        title="고척교회 성경말씀 암송 공유하기"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
-          <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"></line>
-        </svg>
-      </button>
-      <button
-        onclick={toggleTheme}
-        class="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/90 transition hover:bg-white/10"
-        aria-label="테마 전환"
-      >
-        {#if theme === 'dark'}☀️{:else}🌙{/if}
-      </button>
+      <!-- 찬양 아카이브의 .icon-btn과 같은 원형 버튼(38px, 흰색 15% 배경) -->
+      <div class="flex flex-none items-center gap-2">
+        <button
+          onclick={goMemorize}
+          class="icon-btn"
+          aria-label="성경말씀 암송으로 가기"
+          title="성경말씀 암송으로 가기"
+        >
+          📖
+        </button>
+        <button
+          onclick={shareMemorize}
+          class="icon-btn"
+          aria-label="고척교회 성경말씀 암송 공유하기"
+          title="고척교회 성경말씀 암송 공유하기"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"></line>
+          </svg>
+        </button>
+        <button onclick={toggleTheme} class="icon-btn" aria-label="테마 전환">
+          {#if theme === 'dark'}☀️{:else}🌙{/if}
+        </button>
+      </div>
     </div>
   </header>
 
@@ -515,3 +514,28 @@
     </main>
   {/if}
 </div>
+
+<style>
+  /* 헤더 아이콘 버튼 — 찬양 아카이브(worship)의 .icon-btn과 동일한 규격 */
+  .icon-btn {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 17px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .icon-btn:hover {
+    background: rgba(255, 255, 255, 0.24);
+  }
+  .icon-btn:active {
+    background: rgba(255, 255, 255, 0.28);
+  }
+</style>
