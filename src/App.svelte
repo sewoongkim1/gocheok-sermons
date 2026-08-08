@@ -222,14 +222,18 @@
 <div class="min-h-screen">
   <!-- 헤더 -->
   <header class="sticky top-0 z-10 border-b border-line bg-navy text-white">
-    <div class="mx-auto flex max-w-3xl items-center gap-3 px-5 py-4">
-      <div class="flex-1">
-        <div class="font-mono text-[11px] tracking-[0.18em] text-gold-2 uppercase">
-          Sermon Notes
+    <!-- 찬양 아카이브(worship)와 같은 구성: 로고 + 제목 + 부제 -->
+    <div class="mx-auto flex max-w-3xl items-center gap-3 px-5 py-3">
+      <div class="flex min-w-0 flex-1 items-center gap-2.5">
+        <img
+          src="https://summer.onlybible.kr/logo3.png"
+          alt="고척교회"
+          class="h-[38px] w-[38px] flex-none object-contain"
+        />
+        <div class="flex min-w-0 flex-col leading-tight">
+          <b class="text-[17px] font-extrabold whitespace-nowrap text-white">말씀 아카이브</b>
+          <span class="truncate text-[11px] text-white/75">고척교회 · 주일 설교</span>
         </div>
-        <h1 class="mt-0.5 text-lg font-bold tracking-tight whitespace-nowrap text-white">
-          말씀 아카이브
-        </h1>
       </div>
       <button
         onclick={goMemorize}
