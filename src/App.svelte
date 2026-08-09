@@ -221,14 +221,14 @@
 
 <div class="min-h-screen">
   <!-- 헤더 -->
-  <header class="sticky top-0 z-10 border-b border-line bg-navy text-white">
+  <header class="sticky top-0 z-10 border-b border-line bg-header text-white">
     <!-- 찬양 아카이브(worship)와 같은 구성: 로고 + 제목 + 부제 -->
     <div class="mx-auto flex max-w-3xl items-center gap-3 px-5 py-3">
       <div class="flex min-w-0 flex-1 items-center gap-2.5">
         <img
           src="https://summer.onlybible.kr/logo3.png"
           alt="고척교회"
-          class="h-[38px] w-[38px] flex-none object-contain"
+          class="h-[38px] w-[38px] flex-none object-cover object-top"
         />
         <div class="flex min-w-0 flex-col leading-tight">
           <b class="text-[17px] font-extrabold whitespace-nowrap text-white">말씀 아카이브</b>
@@ -257,7 +257,16 @@
           </svg>
         </button>
         <button onclick={toggleTheme} class="icon-btn" aria-label="테마 전환">
-          {#if theme === 'dark'}☀️{:else}🌙{/if}
+          {#if theme === 'dark'}
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.2" />
+              <path d="M12 2.6v2.2M12 19.2v2.2M4.4 12H2.2M21.8 12h-2.2M6.3 6.3 4.7 4.7M19.3 19.3l-1.6-1.6M17.7 6.3l1.6-1.6M4.7 19.3l1.6-1.6" />
+            </svg>
+          {:else}
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z" />
+            </svg>
+          {/if}
         </button>
       </div>
     </div>
