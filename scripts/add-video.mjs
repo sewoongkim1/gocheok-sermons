@@ -23,7 +23,7 @@ const byId = new Map(meta.map((m) => [m.id, m]));
 for (const id of ids) {
   let title = id, date = "";
   try {
-    const out = execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, ...CLIENTS, "--print", "%(title)s\t%(upload_date)s",
+    const out = execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, ...CLIENTS, "--ignore-no-formats-error", "--print", "%(title)s\t%(upload_date)s",
       `https://www.youtube.com/watch?v=${id}`], { encoding: "utf8", env: ENV }).trim().split("\t");
     title = cleanTitle(out[0] || id);
     const d = (out[1] || "").trim();

@@ -43,7 +43,7 @@ for (const e of all.slice(0, LIMIT)) {
   // 업로드 날짜
   let date = "";
   try {
-    date = execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, ...CLIENTS, "--print", "%(upload_date)s",
+    date = execFileSync("yt-dlp", ["--no-warnings", ...COOKIES, ...CLIENTS, "--ignore-no-formats-error", "--print", "%(upload_date)s",
       `https://www.youtube.com/watch?v=${e.id}`], { encoding: "utf8", env: ENV }).trim();
     date = date.length === 8 ? `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}` : "";
   } catch {}
