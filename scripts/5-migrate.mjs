@@ -17,6 +17,9 @@ function separate(s) {
     title = title.slice(m[0].length).trim();
   }
   title = title.replace(/\s*[lIㅣ|]+\s*[차치]동혁\s*(위임|담임)?\s*목사(님)?\s*$/, "").trim(); // 목사님 꼬리표 제거(모든 구분자·오타 변형)
+  // 유튜브 제목에 구분이 안 드러나는 편이 있다(제목이 찬송가였던 2026-09-01 새벽기도 등).
+  // 그럴 때는 src/data/sermons.json 에 category 를 손으로 적어 두면 그것을 그대로 쓴다.
+  if (s.category) return { ...s, title, date };
   let category = "주일설교";
   if (/송구영신/.test(title)) category = "송구영신예배";
   else if (/새벽기도/.test(title)) category = "새벽기도회";

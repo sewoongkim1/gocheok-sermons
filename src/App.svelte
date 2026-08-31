@@ -37,7 +37,11 @@
   })
 
   let query = $state('')
-  let selectedId = $state<string | null>(null)
+  // 주소에 ?s=<영상ID> 가 있으면 그 설교를 바로 연다.
+  //   그전에는 목록에서 찾아 들어가는 길뿐이라 게시판·주보에서 「이 설교」라고 짚어 줄 수가 없었다.
+  let selectedId = $state<string | null>(
+    typeof location !== 'undefined' ? new URLSearchParams(location.search).get('s') : null,
+  )
   let theme = $state<'light' | 'dark' | null>(null)
 
   const selected = $derived(sermons.find((s) => s.id === selectedId) ?? null)
@@ -151,15 +155,31 @@
     paused = false
   }
 
+  // 뒤로 가기가 목록으로 돌아오게, 그리고 주소만 복사해도 그 설교가 열리게.
+  function setUrl(id: string | null) {
+    const u = new URL(location.href)
+    if (id) u.searchParams.set('s', id)
+    else u.searchParams.delete('s')
+    history.pushState({ s: id }, '', u)
+  }
   function open(id: string) {
     stopAudio()
     selectedId = id
+    setUrl(id)
     window.scrollTo(0, 0)
   }
   function back() {
     stopAudio()
     selectedId = null
+    setUrl(null)
   }
+  // 브라우저 뒤로 가기로도 목록으로 돌아온다.
+  if (typeof window !== 'undefined') {
+    window.addEventListener('popstate', () => {
+      selectedId = new URLSearchParams(location.search).get('s')
+    })
+  }
+
   function toggleTheme() {
     const root = document.documentElement
     const now =
