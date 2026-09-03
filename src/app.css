@@ -21,6 +21,14 @@
 }
 
 /* 다크 모드 토큰 — prefers-color-scheme + 수동 토글(data-theme) 양방향 */
+/* ⚠️ 여기는 진짜 다크 CSS가 있으니 gocheok 본진(bible-memorize-church-app-v2)이
+   겪은 "다크 지원 안 하면서 지원한다고 거짓 신호"는 아니다. 다만 color-scheme
+   선언 자체가 없어 스크롤바 등 브라우저 기본 UI는 각 모드에 안 맞을 수 있다 —
+   토큰(색)이 옳은 대상이라 셋 다 짝을 맞춘다(2026-09-03, 본진의 삼성 인터넷
+   강제 반전 수정과 함께 점검). */
+:root { color-scheme: light dark; }
+:root[data-theme='dark'] { color-scheme: dark; }
+:root[data-theme='light'] { color-scheme: light; }
 @media (prefers-color-scheme: dark) {
   :root {
     --color-paper: #0d1424;
