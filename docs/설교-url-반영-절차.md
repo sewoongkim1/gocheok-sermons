@@ -107,6 +107,18 @@ body: {"action":"getSermons"}
 | `audio` | `audio/<id>.mp3` 경로가 있는지(3분 요약 음성) |
 | `summary`/`points`/`conclusion` | 비어있지 않은지 |
 
+### ⚠️ 새 컴퓨터라면: Higgsfield MCP도 이 컴퓨터에만 있다
+
+이미지 생성(4번)에 쓰는 Higgsfield MCP 서버는 `claude mcp add --scope user`로
+**이 컴퓨터의 `~/.claude.json`에만** 등록된다 — git으로 옮겨가지 않는다.
+새 컴퓨터에서 그림까지 만들려면 먼저:
+```
+npm install -g @anthropic-ai/claude-code   (claude CLI가 없으면)
+claude mcp add --transport http higgsfield https://mcp.higgsfield.ai/mcp --scope user
+```
+등록한 뒤 **대화형 세션에서 `/mcp`로 로그인(OAuth)**까지 해야 도구가 실제로 잡힌다.
+(설교 아카이브 반영 자체(1~3번)에는 필요 없다 — 그림까지 만들 때만 해당.)
+
 ## 4. (이번 주 구절이면) 말씀 연상 그림도 함께
 
 3번까지 끝나면, 그 구절에 아직 그림이 없다면 이어서 만든다 — 별도 문서:
