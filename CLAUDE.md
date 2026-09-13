@@ -14,6 +14,8 @@
 
 ## 데이터 파이프라인 (scripts/)
 설교 영상 → 자막 → AI노트 → 음성 → 암송매칭 → 암송도우미 → 테이블 적재 → 챗봇 색인. 키 3개 필요: `ANTHROPIC_API_KEY`, `AZURE_SPEECH_KEY`(+`AZURE_SPEECH_REGION=koreacentral`), `SERMON_ADMIN`(관리자 비번 = 암송앱 `ADMIN_SECRET`과 동일값, 3앱 공통).
+> **설교 URL 하나를 받아 반영하는 전체 절차(사전확인·yt-dlp 함정·검증 체크리스트)는 `docs/설교-url-반영-절차.md`.**
+- `add-local.mjs <유튜브 링크>` — 이 컴퓨터(집 IP)에서 자막·AI노트·음성·매칭·DB적재·git푸시를 **한 번에**. Actions 서버 IP는 유튜브가 봇으로 막아 자막 취득이 실패하므로 새 영상은 보통 이걸로 넣는다. ⚠️ `yt-dlp`가 PATH에 없으면 자막 실패를 조용히 삼키고 exit 0으로 "완료"를 찍는다 — 로그의 `✓ 자막`·`✓ (1/1)` 줄을 반드시 확인
 - `1-fetch.mjs [n]` — 주일설교 재생목록에서 자막 수집(`SERMON_YEAR=2026`로 연도 필터). 영어판 제외
 - `add-video.mjs <id...>` — 재생목록에 없는 개별 영상 추가(신년예배 등)
 - `2-notes.mjs` — 자막 → Claude(`claude-opus-4-8`, structured outputs)로 노트 JSON
