@@ -43,6 +43,9 @@ step("③ Azure 음성(3분 요약 MP3)", ["scripts/3-tts.mjs"]);
 step("④ 암송 구절 매칭", ["scripts/4-link.mjs"]);
 step("④-b 암송 도우미(쉬운 풀이·기억법)", ["scripts/4b-versehelp.mjs"]);
 step("⑤ DB 적재(sermons 테이블)", ["scripts/5-migrate.mjs"]);
+// ⚠️ 이 줄이 add-sermon.mjs 에만 있고 여기엔 빠져 있었다(2026-09-20에 찾음) — 로컬로 넣은 설교는
+//    암송앱 챗봇("내게 주시는 말씀")이 못 찾는 채로 남는다. 5-migrate 뒤여야 sermons 표에서 읽는다.
+step("⑤-b 챗봇 색인(sermon_chunks)", ["scripts/6-embed.mjs", id]);
 
 // 오디오·데이터 커밋·푸시 → Pages가 sermon.onlybible.kr 에 MP3 배포
 console.log("\n▶ ⑥ 오디오·데이터 커밋·푸시");
