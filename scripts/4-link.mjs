@@ -15,7 +15,14 @@ const res = await fetch(API, {
   headers: { "Content-Type": "application/json", apikey: KEY, Authorization: `Bearer ${KEY}` },
   body: JSON.stringify({ action: "getVerses" }),
 });
-const { verses = [] } = await res.json();
+// ⚠️ 목록을 못 받았으면 멈춘다(2026-09-21 최종 리뷰) — 예전엔 오류 응답도 「구절 0개」로 읽어,
+//    아래 반복이 **모든 설교의 memVerseNo·memRef·memText 를 지웠고** 그대로 저장·배포될 수 있었다.
+const j = await res.json().catch(() => ({}));
+if (!j.ok || !Array.isArray(j.verses) || !j.verses.length) {
+  console.error("❌ 암송구절 목록을 받지 못했다 — 연결을 지우지 않고 멈춘다");
+  process.exit(1);
+}
+const verses = j.verses;
 const byVid = new Map(verses.filter((v) => vidOf(v.url)).map((v) => [vidOf(v.url), v]));
 
 const sermons = JSON.parse(readFileSync(OUT, "utf8"));

@@ -17,6 +17,12 @@ on:
         description: 'api 함수 주소(운영/개발)'
         required: true
         type: string
+      # 다시 시도마다 api 함수가 1 씩 올려 보낸다 — 옛 실행이 새 시도의 줄에 쓰지 못하게(2026-09-21 최종 리뷰)
+      attempt:
+        description: '다시 시도 번호'
+        required: false
+        default: '1'
+        type: string
 
 permissions:
   contents: write
@@ -30,6 +36,7 @@ concurrency:
 env:
   JOB_ID: ${{ inputs.job_id }}
   API_BASE: ${{ inputs.api_base }}
+  ATTEMPT: ${{ inputs.attempt }}
   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
 # ⚠️ 일을 넷으로 나눈다 — github-pages 환경은 보통 main 에서만 배포를 허락한다.
@@ -45,6 +52,7 @@ jobs:
         id: target
         run: |
           case "$JOB_ID" in (''|*[!0-9]*) echo "작업 번호가 이상하다: $JOB_ID"; exit 1;; esac
+          case "$ATTEMPT" in (''|*[!0-9]*) echo "시도 번호가 이상하다: $ATTEMPT"; exit 1;; esac
           case "$API_BASE" in
             https://xnomlgydifiqiybervtf.supabase.co/functions/v1/api) mode=prod ;;
             https://ktpwthwqzgcqcrmsafdo.supabase.co/functions/v1/api) mode=dev ;;
