@@ -10,14 +10,18 @@ if (job && job.run_url && job.run_url !== api.runUrl) { console.log("다른 실�
 if (job && job.status !== "failed") {
   await api.update({ status: "failed", error: "GitHub 작업이 도중에 멈췄어요" }).catch(() => {});
   try { job = await api.get(); } catch { /* 위 값으로 */ }
+  // 다시 읽은 뒤에도 같은 검사 — 그사이 다른 실행이 끼어들었으면 여기서도 밀려난 것
+  if (job && job.run_url && job.run_url !== api.runUrl) { console.log("다른 실행이 맡은 작업 — 알리지 않는다"); process.exit(0); }
 }
 const tg = process.env.TG_TOKEN, chat = process.env.TG_CHAT;
 if (modeOf(process.env.API_BASE) === "prod" && tg && chat) {
   const text = ["⚠️ 설교 올리기 실패",
     job ? `${job.title} (${job.svc_date}) · ${job.created_by || ""}` : `작업 #${process.env.JOB_ID}`,
     job ? `${job.step || ""} — ${job.error || ""}` : "", process.env.RUN_URL || ""].filter(Boolean).join("\n");
-  await fetch(`https://api.telegram.org/bot${tg}/sendMessage`, {
+  const r = await fetch(`https://api.telegram.org/bot${tg}/sendMessage`, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ chat_id: chat, text }),
-  }).catch(() => {});
+  }).catch((e) => { console.error("텔레그램 보내기 실패:", e.message); return null; });
+  if (r && !r.ok) console.error("텔레그램 보내기 실패:", r.status);
+  if (!r || !r.ok) process.exitCode = 1;
 }

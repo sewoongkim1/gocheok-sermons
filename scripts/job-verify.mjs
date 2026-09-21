@@ -14,7 +14,7 @@ for (let i = 0; i < 9 && !(row && audioOk); i++) {        // 20초 × 9 = 3분�
   if (i) await sleep(20000);
   try { row = (await prodSermons()).find((s) => s.id === id && s.summary) || null; } catch { /* 다음 번에 */ }
   if (row?.audio) {
-    try { audioOk = (await fetch(SITE + row.audio, { method: "HEAD" })).ok; } catch { /* 다음 번에 */ }
+    try { audioOk = (await fetch(SITE + row.audio + "?t=" + Date.now(), { method: "HEAD" })).ok; } catch { /* 다음 번에 */ }
   }
   console.log(`  확인 ${i + 1}: 설교 ${row ? "있음" : "없음"} · 음성 ${audioOk ? "열림" : "아직"}`);
 }

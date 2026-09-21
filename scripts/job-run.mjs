@@ -49,7 +49,8 @@ try {
   // 2-notes 는 한 편이 실패해도 0 으로 끝난다 — 결과로 본다
   if (!noteOf(readSermons(), id)) throw new Error("AI 노트가 비어 있어요");
   await run("tts", ["scripts/3-tts.mjs"]);
-  if (!noteOf(readSermons(), id)?.audio) throw new Error("음성 파일이 만들어지지 않았어요");
+  // 칸 값이 아니라 파일로 본다 — 다시 시도 때 DB 에서 가져온 줄은 audio 칸이 이미 차 있다
+  if (!existsSync(`public/audio/${id}.mp3`)) throw new Error("음성 파일이 만들어지지 않았어요");
   await run("link", ["scripts/4-link.mjs"]);
   await run("versehelp", ["scripts/4b-versehelp.mjs"]);
 

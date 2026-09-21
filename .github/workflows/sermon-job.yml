@@ -37,6 +37,7 @@ env:
 jobs:
   make:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     outputs:
       mode: ${{ steps.target.outputs.mode }}
     steps:
@@ -45,10 +46,13 @@ jobs:
         run: |
           case "$JOB_ID" in (''|*[!0-9]*) echo "작업 번호가 이상하다: $JOB_ID"; exit 1;; esac
           case "$API_BASE" in
-            https://xnomlgydifiqiybervtf.supabase.co/functions/v1/api) echo "mode=prod" >> "$GITHUB_OUTPUT" ;;
-            https://ktpwthwqzgcqcrmsafdo.supabase.co/functions/v1/api) echo "mode=dev" >> "$GITHUB_OUTPUT" ;;
+            https://xnomlgydifiqiybervtf.supabase.co/functions/v1/api) mode=prod ;;
+            https://ktpwthwqzgcqcrmsafdo.supabase.co/functions/v1/api) mode=dev ;;
             *) echo "모르는 주소: $API_BASE"; exit 1 ;;
           esac
+          # 운영은 main 에서만 — 가지에서 운영 DB 에 쓰면 커밋은 가지로, 배포는 막혀 음성 없는 설교가 뜬다
+          if [ "$mode" = prod ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then echo "운영은 main 에서만 돈다(지금 $GITHUB_REF)"; exit 1; fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -58,11 +62,16 @@ jobs:
 
       - name: 설교 만들기 (노트·음성·연결·저장·챗봇)
         env:
-          SERMON_ADMIN: ${{ steps.target.outputs.mode == 'prod' && secrets.SERMON_ADMIN || secrets.DEV_SERMON_ADMIN }}
+          MODE: ${{ steps.target.outputs.mode }}
+          PROD_PW: ${{ secrets.SERMON_ADMIN }}
+          DEV_PW: ${{ secrets.DEV_SERMON_ADMIN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
           AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
-        run: node scripts/job-run.mjs
+        run: |
+          # ⚠️ 운영 암호가 비었을 때 개발 암호로 넘어가지 않는다(엉뚱한 곳에 「틀린 암호」로 부딪힌다)
+          if [ "$MODE" = prod ]; then export SERMON_ADMIN="$PROD_PW"; else export SERMON_ADMIN="$DEV_PW"; fi
+          node scripts/job-run.mjs
 
       - name: 오디오·데이터 커밋
         if: steps.target.outputs.mode == 'prod'
@@ -92,6 +101,7 @@ jobs:
     needs: make
     if: needs.make.outputs.mode == 'prod'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -102,6 +112,7 @@ jobs:
   verify:
     needs: deploy
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -115,8 +126,9 @@ jobs:
   fail:
     needs: [make, deploy, verify]
     # 모르는 주소면(mode 가 비면) 부르지 않는다 — 관리자 암호를 그리로 보내지 않게
-    if: failure() && needs.make.outputs.mode != ''
+    if: (failure() || cancelled()) && needs.make.outputs.mode != ''
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -124,7 +136,12 @@ jobs:
           node-version: 22
       - name: 실패 기록·알림
         env:
-          SERMON_ADMIN: ${{ needs.make.outputs.mode == 'prod' && secrets.SERMON_ADMIN || secrets.DEV_SERMON_ADMIN }}
+          MODE: ${{ needs.make.outputs.mode }}
+          PROD_PW: ${{ secrets.SERMON_ADMIN }}
+          DEV_PW: ${{ secrets.DEV_SERMON_ADMIN }}
           TG_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: node scripts/job-fail.mjs
+        run: |
+          # ⚠️ 운영 암호가 비었을 때 개발 암호로 넘어가지 않는다(엉뚱한 곳에 「틀린 암호」로 부딪힌다)
+          if [ "$MODE" = prod ]; then export SERMON_ADMIN="$PROD_PW"; else export SERMON_ADMIN="$DEV_PW"; fi
+          node scripts/job-fail.mjs
