@@ -1,0 +1,130 @@
+name: 설교 올리기 (관리자 화면)
+
+# 성경암송 「설교·찬양 관리 → ② 설교 내용 등록」이 api 함수를 거쳐 이 워크플로를 깨운다(sermon_jobs 한 건).
+# 유튜브에 가지 않는다 — 자막은 담당자가 붙인 것. 옛 add-sermon.yml 은 GitHub 서버에서 자막이 막혀 실패했다.
+# ⚠️ api_base 는 두 주소만 받는다(모르는 곳에 관리자 암호를 보내지 않게). 개발 주소면 시험 모드
+#    (노트·음성·연결까지만 — 저장·챗봇·커밋·배포는 건너뛴다).
+# ⚠️ 입력은 env 로만 쓴다 — ${{ inputs.* }} 를 run: 에 바로 넣으면 명령이 끼어들 수 있다.
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: 'sermon_jobs 번호'
+        required: true
+        type: string
+      api_base:
+        description: 'api 함수 주소(운영/개발)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: add-sermon
+  cancel-in-progress: false
+
+env:
+  JOB_ID: ${{ inputs.job_id }}
+  API_BASE: ${{ inputs.api_base }}
+  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+# ⚠️ 일을 넷으로 나눈다 — github-pages 환경은 보통 main 에서만 배포를 허락한다.
+#    한 일(job)에 environment 를 걸면 개발 시험(가지 feat/sermon-staff)이 **시작부터** 막힌다.
+jobs:
+  make:
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.target.outputs.mode }}
+    steps:
+      - name: 주소·번호 확인
+        id: target
+        run: |
+          case "$JOB_ID" in (''|*[!0-9]*) echo "작업 번호가 이상하다: $JOB_ID"; exit 1;; esac
+          case "$API_BASE" in
+            https://xnomlgydifiqiybervtf.supabase.co/functions/v1/api) echo "mode=prod" >> "$GITHUB_OUTPUT" ;;
+            https://ktpwthwqzgcqcrmsafdo.supabase.co/functions/v1/api) echo "mode=dev" >> "$GITHUB_OUTPUT" ;;
+            *) echo "모르는 주소: $API_BASE"; exit 1 ;;
+          esac
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: 설교 만들기 (노트·음성·연결·저장·챗봇)
+        env:
+          SERMON_ADMIN: ${{ steps.target.outputs.mode == 'prod' && secrets.SERMON_ADMIN || secrets.DEV_SERMON_ADMIN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
+        run: node scripts/job-run.mjs
+
+      - name: 오디오·데이터 커밋
+        if: steps.target.outputs.mode == 'prod'
+        run: |
+          git config user.name "김세웅"
+          git config user.email "sewkim00@gmail.com"
+          git add public/audio src/data/sermons.json data/meta.json data/sermons_rows.json
+          if git diff --cached --quiet; then
+            echo "변경 없음(다시 시도 — 이미 올라가 있다)"
+          else
+            git commit -m "설교 올리기(관리자 화면 #$JOB_ID)"
+            git pull --rebase   # 같은 날 친구 PC(add-local.mjs)에서 올린 것과 부딪히지 않게
+            git push
+          fi
+
+      - name: 빌드
+        if: steps.target.outputs.mode == 'prod'
+        run: npm run build
+      - if: steps.target.outputs.mode == 'prod'
+        uses: actions/configure-pages@v5
+      - if: steps.target.outputs.mode == 'prod'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: make
+    if: needs.make.outputs.mode == 'prod'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 확인 (사이트에 정말 들어갔나)
+        env:
+          SERMON_ADMIN: ${{ secrets.SERMON_ADMIN }}
+        run: node scripts/job-verify.mjs
+
+  fail:
+    needs: [make, deploy, verify]
+    # 모르는 주소면(mode 가 비면) 부르지 않는다 — 관리자 암호를 그리로 보내지 않게
+    if: failure() && needs.make.outputs.mode != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 실패 기록·알림
+        env:
+          SERMON_ADMIN: ${{ needs.make.outputs.mode == 'prod' && secrets.SERMON_ADMIN || secrets.DEV_SERMON_ADMIN }}
+          TG_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node scripts/job-fail.mjs
