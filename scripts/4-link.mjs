@@ -2,11 +2,13 @@
 // 성경암송 verses 테이블의 url에 담긴 영상ID로 매칭 → sermons.json에 memVerseNo 새김
 // 사용법: node scripts/4-link.mjs
 import { readFileSync, writeFileSync } from "node:fs";
+import { PROD_API, anonKeyOf, vidOf } from "./job-lib.mjs";
 
-const API = "https://xnomlgydifiqiybervtf.supabase.co/functions/v1/api";
-const KEY = "sb_publishable_oLtieT_jw7Gjb8etEsy0jw_thBaDjl-";
+// 관리자 화면 시험(개발 DB)은 API_BASE 로 개발 주소를 준다. 없으면 운영(친구 PC·예전 그대로).
+// ⚠️ 영상 번호는 youtu.be/… 꼴도 알아본다(예전엔 ?v= 만 알아 조용히 안 이어났다)
+const API = process.env.API_BASE || PROD_API;
+const KEY = anonKeyOf(API);
 const OUT = "src/data/sermons.json";
-const vidOf = (u) => (/[?&]v=([^&]+)/.exec(u || "") || [])[1] || "";
 
 const res = await fetch(API, {
   method: "POST",

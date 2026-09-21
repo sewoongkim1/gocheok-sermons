@@ -43,4 +43,6 @@ const res = await fetch(FN, {
   body: JSON.stringify({ action: "importSermons", secret: ADMIN, sermons }),
 });
 const j = await res.json();
-console.log(j.ok ? `✅ 테이블 적재 완료: ${j.count}편` : `❌ 실패: ${j.error}`);
+// ⚠️ 실패해도 0 으로 끝나 Actions 가 초록불이던 자리(메모리 sermon-yt-bot-block) — 이제 빨간불로 멈춘다
+if (!j.ok) { console.log(`❌ 실패: ${j.error}`); process.exit(1); }
+console.log(`✅ 테이블 적재 완료: ${j.count}편`);
