@@ -101,7 +101,9 @@ async function worker() {
       });
       const note = JSON.parse(res.content.find((b) => b.type === "text").text);
       byId.set(m.id, {
-        id: m.id, title: m.title, preacher: PREACHER, series: SERIES, date: m.date || "",
+        // 설교자·구분은 관리자 화면에서 확인한 값이 있으면 그것(초청 설교자 주 · 2026-09-21), 없으면 예전 고정값
+        id: m.id, title: m.title, preacher: m.preacher || PREACHER, series: SERIES, date: m.date || "",
+        ...(m.category ? { category: m.category } : {}),
         ...note,
       });
       count++;
