@@ -28,6 +28,13 @@ test("meta — 같은 영상은 한 줄, 날짜 최신순", () => {
   assert.deepEqual(out[0], { id: "9YgDMXP77NE", title: "새 제목", date: "2026-09-20", category: "주일설교", preacher: "초청 목사" });
 });
 
+test("meta — 담당자가 넣은 설교 구절(scripture)은 실리고, 없으면 칸을 안 만든다", () => {
+  const withScr = mergeMeta([], { video_id: "9YgDMXP77NE", title: "T", svc_date: "2026-09-20", category: "주일설교", preacher: "P", scripture: "요 3:16" });
+  assert.equal(withScr[0].scripture, "요 3:16");
+  const noScr = mergeMeta([], { video_id: "9YgDMXP77NE", title: "T", svc_date: "2026-09-20", category: "주일설교", preacher: "P" });
+  assert.ok(!("scripture" in noScr[0]));   // 비면 칸 자체가 없다 → 2-notes 가 AI 값을 쓴다
+});
+
 test("다시 시도 — DB 에 있던 설교가 sermons.json 을 이긴다", () => {
   const out = adoptSermon([{ id: "A", summary: "로컬" }, { id: "B" }], { id: "A", summary: "DB" });
   assert.equal(out.length, 2);

@@ -18,9 +18,12 @@ export function vidOf(u) {
 }
 
 // 작업 한 건을 data/meta.json 한 줄로 — 제목·날짜·구분·설교자는 담당자가 확인한 값(유튜브에 가지 않는다)
+//   scripture(설교 구절)도 담당자가 ②에서 넣으면 싣는다 — 2-notes 가 AI 값 대신 이 값을 쓴다(비면 AI 가 뽑는다)
 export function mergeMeta(meta, job) {
   const rest = (meta || []).filter((m) => m.id !== job.video_id);
-  rest.push({ id: job.video_id, title: job.title, date: job.svc_date, category: job.category, preacher: job.preacher });
+  const row = { id: job.video_id, title: job.title, date: job.svc_date, category: job.category, preacher: job.preacher };
+  if (job.scripture) row.scripture = job.scripture;
+  rest.push(row);
   return rest.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 }
 

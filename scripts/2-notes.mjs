@@ -105,6 +105,8 @@ async function worker() {
         id: m.id, title: m.title, preacher: m.preacher || PREACHER, series: SERIES, date: m.date || "",
         ...(m.category ? { category: m.category } : {}),
         ...note,
+        // 설교 구절은 담당자가 ②에서 넣은 값을 권위로 — AI 가 자막에서 뽑은 것은 비었을 때만 쓴다(2026-10-09)
+        ...(m.scripture ? { scripture: m.scripture } : {}),
       });
       count++;
       console.log(`  ✓ ${m.id} (${count}/${count + tasks.length}) ${m.title}`);
