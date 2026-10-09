@@ -25,6 +25,7 @@ function separate(s) {
   else if (/새벽기도/.test(title)) category = "새벽기도회";
   else if (/성령집회|금요/.test(title)) category = "금요성령집회";
   else if (/특별집회/.test(title)) category = "특별집회";
+  else if (/월삭/.test(title)) category = "월삭예배";
   return { ...s, title, date, category };
 }
 
