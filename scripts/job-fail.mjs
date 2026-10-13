@@ -2,7 +2,7 @@
 import { jobApi } from "./job-api.mjs";
 import { modeOf } from "./job-lib.mjs";
 
-// ⚠️ jobApi 자체가 던질 수 있다(예: 운영 비밀값이 비어 SERMON_ADMIN 이 없을 때) — 그래도 알림은 가야 한다
+// ⚠️ jobApi 자체가 던질 수 있다(예: 운영 비밀값이 비어 SERMON_JOB_KEY 가 없을 때) — 그래도 알림은 가야 한다
 let api = null;
 try { api = jobApi(process.env); } catch (e) { console.error("작업 연결을 못 만들었다:", e.message); }
 // 실행 주소 비교용 — api 가 없으면(연결 실패) env 의 RUN_URL 로 대신한다
@@ -34,7 +34,7 @@ if (mode === "prod" && (!tg || !chat)) {
 } else if (mode === "prod") {
   const text = ["⚠️ 설교 올리기 실패",
     job ? `${job.title} (${job.svc_date}) · ${job.created_by || ""}` : `작업 #${process.env.JOB_ID}`,
-    job ? `${job.step || ""} — ${job.error || ""}` : (!api ? "작업 연결을 못 만들었다 — 비밀값(SERMON_ADMIN/DEV_SERMON_ADMIN)을 확인" : ""),
+    job ? `${job.step || ""} — ${job.error || ""}` : (!api ? "작업 연결을 못 만들었다 — 비밀값(SERMON_JOB_KEY/DEV_SERMON_JOB_KEYADMIN)을 확인" : ""),
     process.env.RUN_URL || ""].filter(Boolean).join("\n");
   const r = await fetch(`https://api.telegram.org/bot${tg}/sendMessage`, {
     method: "POST", headers: { "Content-Type": "application/json" },

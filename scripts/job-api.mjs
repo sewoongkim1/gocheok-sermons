@@ -18,10 +18,12 @@ export async function prodSermons() {
 }
 
 export function jobApi(env) {
-  const base = env.API_BASE, pw = env.SERMON_ADMIN, id = Number(env.JOB_ID);
-  // ⚠️ 모르는 주소면 여기서 멈춘다 — 관리자 암호를 그리로 보내지 않는다
+  // 설교 작업 키(SERMON_JOB_KEY · 2026-10-13) — api 가 sermonJobGet·sermonJobUpdate 만 열어 주는 전용 키(머리 x-machine-key).
+  //   GitHub 에서는 이 키만 쓴다. 관리자 암호(SERMON_ADMIN)는 손으로 돌릴 때의 옛 길 — 10/25 관리자 암호 교체 뒤에는 새 암호라야 한다.
+  const base = env.API_BASE, jobKey = env.SERMON_JOB_KEY || "", pw = jobKey ? "" : (env.SERMON_ADMIN || ""), id = Number(env.JOB_ID);
+  // ⚠️ 모르는 주소면 여기서 멈춘다 — 키·암호를 그리로 보내지 않는다
   if (!modeOf(base)) throw new Error(`모르는 API_BASE: ${base}`);
-  if (!pw || !Number.isInteger(id)) throw new Error("SERMON_ADMIN · JOB_ID 가 필요하다");
+  if (!(jobKey || pw) || !Number.isInteger(id)) throw new Error("SERMON_JOB_KEY(또는 SERMON_ADMIN) · JOB_ID 가 필요하다");
   // ⚠️ GitHub 에서 돌 때는 실행 주소가 꼭 있어야 한다 — 없으면 서버의 「다른 실행이 맡은 작업」 검사가 꺼진다(Task 3 리뷰)
   if (env.GITHUB_ACTIONS === "true" && !env.RUN_URL) throw new Error("RUN_URL 이 비었다");
   // 다시 시도 번호 — 서버는 지금 번호와 다른 기록을 「stale」로 거절한다(다시 시도는 run_url 을 비우므로 그것만으로는
@@ -34,8 +36,9 @@ export function jobApi(env) {
   async function call(action, extra = {}) {
     const r = await fetch(base, {
       method: "POST",
-      headers: { "Content-Type": "application/json", apikey: key, Authorization: `Bearer ${key}` },
-      body: JSON.stringify({ action, pw, id, ...extra }),
+      headers: { "Content-Type": "application/json", apikey: key, Authorization: `Bearer ${key}`,
+        ...(jobKey ? { "x-machine-key": jobKey } : {}) },
+      body: JSON.stringify({ action, ...(jobKey ? {} : { pw }), id, ...extra }),
     });
     const j = await r.json().catch(() => ({}));
     if (!j.ok) throw new Error(`${action}: ${j.error || "HTTP " + r.status}`);

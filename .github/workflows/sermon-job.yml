@@ -72,15 +72,15 @@ jobs:
       - name: 설교 만들기 (노트·음성·연결·저장·챗봇)
         env:
           MODE: ${{ steps.target.outputs.mode }}
-          PROD_PW: ${{ secrets.SERMON_ADMIN }}
-          DEV_PW: ${{ secrets.DEV_SERMON_ADMIN }}
+          PROD_KEY: ${{ secrets.SERMON_JOB_KEY }}
+          DEV_KEY: ${{ secrets.DEV_SERMON_JOB_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
           AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
         run: |
-          # ⚠️ 운영 암호가 비었을 때 개발 암호로 넘어가지 않는다(엉뚱한 곳에 「틀린 암호」로 부딪힌다)
-          if [ "$MODE" = prod ]; then export SERMON_ADMIN="$PROD_PW"; else export SERMON_ADMIN="$DEV_PW"; fi
-          unset PROD_PW DEV_PW
+          # ⚠️ 운영 키가 비었을 때 개발 키로 넘어가지 않는다(엉뚱한 곳에 「틀린 키」로 부딪힌다) · 설교 작업 키(2026-10-13 — 관리자 암호 대신)
+          if [ "$MODE" = prod ]; then export SERMON_JOB_KEY="$PROD_KEY"; else export SERMON_JOB_KEY="$DEV_KEY"; fi
+          unset PROD_KEY DEV_KEY
           node scripts/job-run.mjs
 
       - name: 오디오·데이터 커밋
@@ -130,7 +130,7 @@ jobs:
           node-version: 22
       - name: 확인 (사이트에 정말 들어갔나)
         env:
-          SERMON_ADMIN: ${{ secrets.SERMON_ADMIN }}
+          SERMON_JOB_KEY: ${{ secrets.SERMON_JOB_KEY }}
         run: node scripts/job-verify.mjs
 
   fail:
@@ -147,12 +147,12 @@ jobs:
       - name: 실패 기록·알림
         env:
           MODE: ${{ needs.make.outputs.mode }}
-          PROD_PW: ${{ secrets.SERMON_ADMIN }}
-          DEV_PW: ${{ secrets.DEV_SERMON_ADMIN }}
+          PROD_KEY: ${{ secrets.SERMON_JOB_KEY }}
+          DEV_KEY: ${{ secrets.DEV_SERMON_JOB_KEY }}
           TG_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          # ⚠️ 운영 암호가 비었을 때 개발 암호로 넘어가지 않는다(엉뚱한 곳에 「틀린 암호」로 부딪힌다)
-          if [ "$MODE" = prod ]; then export SERMON_ADMIN="$PROD_PW"; else export SERMON_ADMIN="$DEV_PW"; fi
-          unset PROD_PW DEV_PW
+          # ⚠️ 운영 키가 비었을 때 개발 키로 넘어가지 않는다(엉뚱한 곳에 「틀린 키」로 부딪힌다) · 설교 작업 키(2026-10-13 — 관리자 암호 대신)
+          if [ "$MODE" = prod ]; then export SERMON_JOB_KEY="$PROD_KEY"; else export SERMON_JOB_KEY="$DEV_KEY"; fi
+          unset PROD_KEY DEV_KEY
           node scripts/job-fail.mjs

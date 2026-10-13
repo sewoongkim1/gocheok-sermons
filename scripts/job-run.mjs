@@ -1,7 +1,7 @@
 // 관리자 화면(설교·찬양 관리 → ② 설교 내용 등록)에서 올린 작업 한 건 — sermon-job.yml 이 부른다.
 //   유튜브에는 가지 않는다: 자막은 담당자가 붙인 것(sermon_jobs.transcript), 제목·날짜·구분·설교자도 그 값.
 //   설계: bible-memorize-church-app-v2/docs/superpowers/specs/2026-09-21-sermon-staff-upload-design.md 4장
-// 환경: API_BASE · SERMON_ADMIN · JOB_ID · ATTEMPT · RUN_URL · ANTHROPIC_API_KEY · AZURE_SPEECH_KEY · AZURE_SPEECH_REGION
+// 환경: API_BASE · SERMON_JOB_KEY(손으로 돌릴 땐 SERMON_ADMIN 도 됨) · JOB_ID · ATTEMPT · RUN_URL · ANTHROPIC_API_KEY · AZURE_SPEECH_KEY · AZURE_SPEECH_REGION
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { jobApi, prodSermons } from "./job-api.mjs";
