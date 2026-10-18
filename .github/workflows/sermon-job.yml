@@ -74,13 +74,20 @@ jobs:
           MODE: ${{ steps.target.outputs.mode }}
           PROD_KEY: ${{ secrets.SERMON_JOB_KEY }}
           DEV_KEY: ${{ secrets.DEV_SERMON_JOB_KEY }}
+          PROD_PW: ${{ secrets.SERMON_ADMIN }}
+          DEV_PW: ${{ secrets.DEV_SERMON_ADMIN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
           AZURE_SPEECH_REGION: ${{ secrets.AZURE_SPEECH_REGION }}
         run: |
           # ⚠️ 운영 키가 비었을 때 개발 키로 넘어가지 않는다(엉뚱한 곳에 「틀린 키」로 부딪힌다) · 설교 작업 키(2026-10-13 — 관리자 암호 대신)
           if [ "$MODE" = prod ]; then export SERMON_JOB_KEY="$PROD_KEY"; else export SERMON_JOB_KEY="$DEV_KEY"; fi
-          unset PROD_KEY DEV_KEY
+          # ⚠️ 저장(5-migrate → sermon 함수 importSermons)·챗봇(6-embed → api embedSermons)은 아직 관리자 암호로 연다 —
+          #    10/13 에 이 줄까지 걷어 2026-10-18 첫 실행에서 저장은 조용히 건너뛰고 챗봇에서 멈췄다(lV6AhR2irZM).
+          #    10/25 관리자 암호 교체 때 SERMON_ADMIN·DEV_SERMON_ADMIN 도 새 암호로(또는 두 액션을 작업 키로 연 뒤 이 줄을 걷는다).
+          if [ "$MODE" = prod ]; then export SERMON_ADMIN="$PROD_PW"; else export SERMON_ADMIN="$DEV_PW"; fi
+          unset PROD_KEY DEV_KEY PROD_PW DEV_PW
+          if [ -z "$SERMON_ADMIN" ]; then echo "::error::SERMON_ADMIN 시크릿이 비었다 — 저장·챗봇 단계가 못 돈다"; exit 1; fi
           node scripts/job-run.mjs
 
       - name: 오디오·데이터 커밋
